@@ -1,11 +1,23 @@
 - Table of contents
 {:toc}
 
-# Lorem ipsum
+# Htmx and Playwright Tests in TypeScript
 
 - project version: unknown
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+\[JavaScriptレスの動的UI開発 htmx入門、太田智暉、C＆R研究所\](<https://www.c-r.com/book/detail/1595)（以下で> "htmx本" と略する）のサンプルコードと [Qiita記事](https://qiita.com/twrcd1227/items/7bce18167fb02ec22729) をよりどころとして [htmx](https://htmx.org/) を活用してWebアプリケーションを開発する手法を学んだ。htmxについてはhtmx本に譲る。webアプリケーションの動作環境をTypeScriptで構築すること、およびPlaywrightでテストを実装することについて、わたしなりの工夫をした。どんな工夫をしたかを自分の忘備録として以下に記述する。
+
+## 狙い
+
+- htmx本のサンプルコードを写経し動かしてhtmxを理解したい。
+
+- htmxを採用したHTMLをブラウザ上で開いて動きを確認するためにはバックエンドとしてのwebアプリケーションが必要だ。htmx本の著者はPythonで書いて [コード一式](https://github.com/tomo1227/htmx_book_app) をGitHubで公開している。それはさておき、わたしはwebアプリをTypeScriptで書きたい。
+
+- webアプリ [bun](https://bun.com/docs) と [Hono](https://hono.dev/) の上で構築しよう。Node.jsとExpressではなくて。
+
+- Playwrightでテストを書こう。htmx本はテストをどうやって書くかについて言及していない。しかしテストは必須だ。webアプリをTypeScriptで書くならば、テストもPlaywrightで書くのが良い。
+
+- Playwrightに関する情報を探すとNode.js上で実行することを前提しているものがほとんどだ。bunの上でPlaywrightを動かすノウハウを紹介する記事がネット上にほとんど見当たらない。ここにわたしが乗り越えるべきハードルがある。
 
 ## Ut enim ad minim veriam
 

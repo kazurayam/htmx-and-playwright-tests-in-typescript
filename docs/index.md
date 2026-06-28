@@ -140,6 +140,6 @@ Chromeブラウザを立ち上げて <http://localhost:3000/> を開いてみま
 <img src="https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/001_index.ts.png" alt="001 index.ts" />
 </figure>
 
-ちゃんとしたHTTP応答が表示されました。#1F600
+ちゃんとしたHTTP応答が表示されました。:clap:
 
 コマンドラインで CTRL+C を実行してwebサーバーを停止することができます。

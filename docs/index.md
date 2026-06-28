@@ -235,7 +235,7 @@ webサーバーを停止するにはコマンドラインで CTRL+C と入力し
 
 `main.ts` が応答した `Hello Bun!` という文字がたしかに画面に表示されています。
 
-## webアプリがlistenするIPポート番号を明示的に指定する
+## Honoで構築したwebアプリがlistenするIPポート番号を明示的に指定する
 
 参考情報: <https://hono.dev/docs/getting-started/nodejs#change-port-number>
 

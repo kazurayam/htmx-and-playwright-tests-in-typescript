@@ -140,6 +140,146 @@ Chromeブラウザを立ち上げて <http://localhost:3000/> を開いてみま
 <img src="https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/001_index.ts.png" alt="001 index.ts" />
 </figure>
 
-ちゃんとしたHTTP応答が表示されました。:clap:
+ちゃんとしたHTTP応答が表示されました。
 
-コマンドラインで CTRL+C を実行してwebサーバーを停止することができます。
+webサーバーを停止するにはコマンドラインで CTRL+C と入力します。
+
+## Honoを導入する
+
+参考情報: <https://hono.dev/docs/getting-started/bun>
+
+`my-app` プロジェクトに [Hono]() を導入しHonoを基盤とするwebアプリケーションの開発に着手します。
+
+`PROJCT` ディレクトリにcd して `bun add hono` コマンドを実行して、honoパッケージを導入します。
+
+    $ cd $PROJECT
+    $ bun add hono
+
+すると `package.json` ファイルの `dependencies` プロパティに hono が追加された。
+
+    {
+      "name": "my-app",
+      "module": "index.ts",
+      "type": "module",
+      "private": true,
+      "devDependencies": {
+        "@types/bun": "latest"
+      },
+      "peerDependencies": {
+        "typescript": "^5"
+      },
+      "dependencies": {
+        "hono": "^4.12.27"
+      }
+    }
+
+`$PROJECT` ディレクトリの下に `src` ディレクトリを追加し、 `src` ディレクトリの下に `main.ts` ファイルを追加します。
+
+    $ cd $PROJECT
+    $ mkdir src
+    $ cd src
+    $ touch main.ts
+
+`$PROJECT` ディレクトリの中身はこうなりました。
+
+    $ cd $PROJECT
+    $ tree . -L 2
+    .
+    ├── bun.lock
+    ├── CLAUDE.md
+    ├── index.ts
+    ├── node_modules
+    │   ├── @types
+    │   ├── bun-types
+    │   ├── hono
+    │   ├── typescript
+    │   └── undici-types
+    ├── package.json
+    ├── README.md
+    ├── src
+    │   └── main.ts
+    └── tsconfig.json
+
+`src/main.ts` に下記のTypeScriptコードを書きました。
+
+    import { Hono } from 'hono'
+
+    const app = new Hono()
+        .get('/', (c) => c.text('Hello Bun!'));
+
+    export default app;
+
+`package.json` に `script` プロパティを挿入し、`main` サブコマンドを定義しました。
+
+    {
+      "name": "my-app",
+      "module": "index.ts",
+      "type": "module",
+      "private": true,
+      "scripts": {
+        "main": "bun run --hot src/main.ts"
+      },
+      ...
+
+さて、コマンドラインでmainサブコマンドを実行しましょう。
+
+    $ cd $PROJECT
+    $ bun run main
+    Started development server: http://localhost:3000
+
+これによってwebアプリケーションが立ち上がって `http://localhost:3000` がアクセス可能になります。ブラウザでアクセスしてみました。
+
+<figure>
+<img src="https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/main.ts.png" alt="main.ts" />
+</figure>
+
+`main.ts` が応答した `Hello Bun!` という文字がたしかに画面に表示されています。
+
+## webアプリがlistenするIPポート番号を明示的に指定する
+
+参考情報: <https://hono.dev/docs/getting-started/nodejs#change-port-number>
+
+`new Hono()` でインスタンス化されるHTTPサーバは3000番のIPポートをlistenします。これを別なポート番号に切り替えたい。例えば 3001 にしたい。どうすればいいか？
+
+`src/main.ts` を修正します。
+
+    import { Hono } from 'hono'
+    import { serve } from '@hono/node-server'
+
+    const app = new Hono()
+        .get('/', (c) => c.text('Hello Bun!'));
+
+    const server = serve({
+        port: 3001,
+        fetch: app.fetch
+    })
+
+    export default server;
+
+このコードは [`@hono/node-server`](https://github.com/honojs/node-server) を必要とします。だから下記のコマンドでプロジェクトに追加します。
+
+    $ cd $PROJECT
+    $ bun add @hono/node-server
+    bun add v1.3.14 (0d9b296a)
+
+    installed @hono/node-server@2.0.6
+
+    1 package installed [904.00ms]
+
+\`package.json\`の\`dependencies\`が自動的に修正されました。
+
+    {
+      ...
+      "dependencies": {
+        "@hono/node-server": "^2.0.6",
+        "hono": "^4.12.27"
+      }
+    }
+
+ちなみに\`@hono/node-server\` はNode.jsのバージョン20以降を必要とします。わたしのMacにはNode.js v24がインストール済みなので大丈夫です。
+
+\`bun run main\`コマンドでwebアプリを起動しましょう。ポート番号 3001 をlistenするwebアプリが立ち上がりました。
+
+<figure>
+<img src="https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/003_main_3001.png" alt="003 main 3001" />
+</figure>

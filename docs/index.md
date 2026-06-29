@@ -15,11 +15,11 @@
 
 - webアプリを [bun](https://bun.com/docs) と [Hono](https://hono.dev/) の上で構築したい。Node.jsとExpressではなくて。
 
-- htmx本はテストをどう書くかについて言及していない。しかしわたしはhtmx本のサンプルコードを写したらテストを書いて、逐一動作を確認するというtest-firstな手順でやりたい。わたしは [Playwright](https://playwright.dev/docs/intro) でテストを書こう。
+- htmx本はテストをどう書くかについて言及していない。わたしはまずテストを書いて、次にhtmx本のサンプルコードを写して、ひとつひとつ動作を確認するという手順でやりたい。test-first。だから [Playwright](https://playwright.dev/docs/intro) でwebアプリをテストしよう。
 
 ## わたしが取り組むべき課題
 
-Playwrightの公式ドキュメント [Getting started/Installation](https://playwright.dev/docs/intro) を見れば明らかだが、Playwrightのドキュメントは [Node.js](https://nodejs.org/) 上で実行することを前提している。bunの上でPlaywrightを動かす例がネット上にほとんど見当たらない。だからわたしは自力で答えを見つけなければならない。
+Playwrightの公式ドキュメント [Getting started/Installation](https://playwright.dev/docs/intro) を見れば明らかだが、Playwrightのドキュメントは [Node.js](https://nodejs.org/) 上で実行することを前提している。bunの上でPlaywrightを動かす事例がネット上にほとんど見当たらない。だからわたしは自力で答えを見つけなければならない。
 
 ## わたしの環境
 
@@ -230,7 +230,7 @@ webサーバーを停止するにはコマンドラインで CTRL+C と入力し
 これによってwebアプリケーションが立ち上がって `http://localhost:3000` がアクセス可能になります。ブラウザでアクセスしてみました。
 
 <figure>
-<img src="https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/main.ts.png" alt="main.ts" />
+<img src="https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/002_main.ts.png" alt="002 main.ts" />
 </figure>
 
 `main.ts` が応答した `Hello Bun!` という文字がたしかに画面に表示されています。

@@ -14,11 +14,11 @@
 - わたしはhtmxを理解するためにhtmx本のサンプルコードを写経して動かしたい。
 - htmxを採用したHTMLをブラウザ上で開いて動きを確認するためにはバックエンドとしてのwebアプリケーションが必要だ。htmx本の著者はPythonで書いたwebアプリケーションの link:https://github.com/tomo1227/htmx_book_app[ソースコード一式] をGitHubで公開している。それはさておき、わたしはwebアプリをTypeScriptで書きたい。
 - webアプリを link:https://bun.com/docs[bun] と link:https://hono.dev/[Hono] の上で構築したい。Node.jsとExpressではなくて。
-- htmx本はテストをどう書くかについて言及していない。しかしわたしはhtmx本のサンプルコードを写したらテストを書いて、逐一動作を確認するというtest-firstな手順でやりたい。わたしは link:https://playwright.dev/docs/intro[Playwright] でテストを書こう。
+- htmx本はテストをどう書くかについて言及していない。わたしはまずテストを書いて、次にhtmx本のサンプルコードを写して、ひとつひとつ動作を確認するという手順でやりたい。test-first。だから link:https://playwright.dev/docs/intro[Playwright] でwebアプリをテストしよう。
 
 === わたしが取り組むべき課題
 
-Playwrightの公式ドキュメント link:https://playwright.dev/docs/intro[Getting started/Installation] を見れば明らかだが、Playwrightのドキュメントは link:https://nodejs.org/[Node.js] 上で実行することを前提している。bunの上でPlaywrightを動かす例がネット上にほとんど見当たらない。だからわたしは自力で答えを見つけなければならない。
+Playwrightの公式ドキュメント link:https://playwright.dev/docs/intro[Getting started/Installation] を見れば明らかだが、Playwrightのドキュメントは link:https://nodejs.org/[Node.js] 上で実行することを前提している。bunの上でPlaywrightを動かす事例がネット上にほとんど見当たらない。だからわたしは自力で答えを見つけなければならない。
 
 === わたしの環境
 
@@ -253,7 +253,7 @@ Started development server: http://localhost:3000
 
 これによってwebアプリケーションが立ち上がって `http://localhost:3000` がアクセス可能になります。ブラウザでアクセスしてみました。
 
-image::{PAGES_URL}/images/main.ts.png[]
+image::{PAGES_URL}/images/002_main.ts.png[]
 
 `main.ts` が応答した `Hello Bun!` という文字がたしかに画面に表示されています。
 

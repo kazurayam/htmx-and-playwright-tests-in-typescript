@@ -310,3 +310,121 @@ installed @hono/node-server@2.0.6
 
 image::{PAGES_URL}/images/003_main_3001.png[]
 
+=== JSXを導入してwebアプリのトップ画面を実装する。
+
+ここから先はhtmx本のバックエンドの役を果たすwebアプリケーションを構築することを目標に、`main.ts` を拡張していきます。HTMLを応答するために link:https://engineer-tips.com/2025/06/21/what-is-jsx/[JSX] を導入します。
+
+参考情報: https://hono.dev/docs/guides/jsx
+
+”JSX”をキーとしてネットを検索するとたくさんヒットします。その多くは「Reactで使うJSX」とか「React初心者が理解すべきJSX」というタイトル。あたかもJSXがReactの構成部品であるかのような説明です。しかしJSXはReactとの組み合わせでだけ使える技術ではありません。HonoはJSXの処理系を同梱しています。Server Side Rendering(SSR、HTTPサーバがJSXで記述されたスクリプトを入力としてHTMLを生成しHTTPクライアントへ応答する方式）を実現することができます。htmxを駆使するHTMLを生成するのにJSXはとても役に立ちます。
+
+HonoでJSXを利用するために `tsconfig.json` ファイルを変更します。
+
+```
+{
+  "compilerOptions": {
+    ...
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    ...
+```
+
+`src/main.ts` を `src/main.tsx` に変更します。TypeScriptファイルがJSX構文を使っていることを明示します。そして `package.json` ファイルの `scripts` を下記のように修正します。
+
+```
+  ...
+  "scripts": {
+    "main": "bun run --hot src/main.tsx"
+  },
+  ...
+```
+
+`src/main.tsx` のなかみを下記のように変更します。
+
+```
+// src/main.ts
+import { Hono } from 'hono'
+import { serve } from '@hono/node-server'
+import { Top } from './top';
+
+const app = new Hono();
+
+app.get('/', (c) => {
+    const messages = ['Hello htmx'];
+    return c.render(
+        <Top messages={ messages } />
+    )
+});
+
+const server = serve({
+    port: 3001,
+    fetch: app.fetch
+})
+
+export default server;
+```
+
+新しいTypeScriptコード `src/top.tsx` を作ります。
+
+```
+// src/top.tsx
+import type { FC } from 'hono/jsx';
+import { Layout } from "./layout";
+
+export const Top: FC<{ messages: string[] }> = (props: {
+    messages: string[]
+}) => {
+    return (
+        <Layout>
+            {
+                props.messages.map((message) => {
+                    return <p>{message}</p>;
+                })
+            }
+            <div id="htmx-book-app">
+                <h1>htmx Book App</h1>
+                <div id="app-contents">
+                    <ul>
+                        <li><a href="/section3">Section 3</a></li>
+                        <li><a href="/section4">Section 4</a></li>
+                        <li>...</li>
+                    </ul>
+                </div>
+            </div>
+        </Layout>
+    );
+}
+```
+
+もう一つTypeScriptコード `src/layout.tsx` を作ります。
+
+```
+// src/layout.tsx
+import type { FC } from 'hono/jsx'
+
+export const Layout: FC = (props) => {
+    return (
+        <html lang="ja">
+            <head>
+                <meta charset="UTF-8"></meta>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+                <title>htmx + JSX on Hono + bun</title>
+                <script src="/htmx/htmx.min.js" hx-preserve="true"></script>
+                <link rel="stylesheet" href="/styles/tutorial.css"></link>
+                <link rel="icon" href="/favicon.ico"></link>
+            </head>
+            <body>
+                <body>{props.children}</body>
+            </body>
+        </html>
+    )
+}
+```
+
+これでwebアプリケーションができました。`bun run main` コマンドでwebアプリを起動し、ブラウザで `http://localhost:3001` にアクセスすると、下記のような画面が応答されました。
+
+image::{PAGES_URL}/images/004_main_hono_jsx.png[004_main_hono_jsx]
+
+=== 静的なファイル（スタイルシート等）を組み込む
+
+

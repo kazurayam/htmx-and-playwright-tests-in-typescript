@@ -411,7 +411,6 @@ export const Layout: FC = (props) => {
                 <title>htmx + JSX on Hono + bun</title>
                 <script src="/htmx/htmx.min.js" hx-preserve="true"></script>
                 <link rel="stylesheet" href="/styles/tutorial.css"></link>
-                <link rel="icon" href="/favicon.ico"></link>
             </head>
             <body>
                 <body>{props.children}</body>
@@ -425,6 +424,61 @@ export const Layout: FC = (props) => {
 
 image::{PAGES_URL}/images/004_main_hono_jsx.png[004_main_hono_jsx]
 
-=== 静的なファイル（スタイルシート等）を組み込む
+=== 静的なファイルを組み込む
+
+参考情報: https://hono.dev/docs/getting-started/nodejs#serve-static-files
+
+`http://localhost:3001`を開いてブラウザのDevToolsのコンソールを見ると `404 Not Found` のエラーが発生しているのがわかります。
+
+image::{PAGES_URL}/images/005_main_404NotFound.png[]
+
+なぜエラーが発生したかというと、`main.tsx`に次のコードが書いてある。
+
+```
+                ...
+                <script src="/htmx/htmx.min.js" hx-preserve="true"></script>
+                <link rel="stylesheet" href="/styles/tutorial.css"></link>
+                ...
+```
+
+そのいっぽうで `/htmx/htmx.min.js` と `/styles/tutorial.css` という二つのURLに対応するファイルをwebアプリが応答できていなかったから。この問題を解決しよう。
+
+`$PROJECT` ディレクトリの下に `static` ディレクトリを追加します。`static` ディレクトリの下に `htmx` ディレクトリと `styles` ディレクトリを追加します。
+
+```
+$ cd $PROJECT
+$ mkdir static
+$ cd static
+$ mkdir htmx
+$ mkdir styles
+$ cd -
+```
+
+下記のサイトから`htmx.min.js` の最新バージョンをダウンロードして `$PROJECT/static/htmx/htmx.min.js` として保存しましょう。
+
+- https://www.jsdelivr.com/package/npm/htmx.org
+
+htmx本の著者によるサンプルコードのGitHubレポジトリから `tutorial.css` をダウンロードして `$PROJECT/static/styles/tutorial.css` として保存しましょう。
+
+- https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/tutorial.css
+
+URL `http://localhost:3001/htmx/htmx.min.js` をwebアプリのファイルパス `$PROJECT/static/htmx/htmx.min.js` に対応づける必要があります。`src/main.jsx` を修正します。
+
+```
+// src/main.tsx
+...
+import { serveStatic } from '@hono/node-server/serve-static'
+...
+
+const app = new Hono()
+app.use('*', serveStatic({ root: './static' }))
+...
+```
+
+webアプリケーションをstop&restartして `http://localhost:3001` を開くと、CSSが適用されてページの見た目が変化したのがわかります。
+
+image::{PAGES_URL}/images/006_main_css_applied.png[]
+
+
 
 

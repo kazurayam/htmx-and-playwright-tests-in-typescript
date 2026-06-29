@@ -7,14 +7,14 @@
 
 - project version: {projectVersion}
 
-書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードと link:https://qiita.com/twrcd1227/items/7bce18167fb02ec22729[Qiita記事] をよりどころとして link:https://htmx.org/[htmx] を活用してWebアプリケーションを開発する手法を学ぼうと思う。htmxそのものについてはhtmx本に譲る。webアプリケーションの動作環境をTypeScriptで構築すること、およびPlaywrightでテストを実装することについて、わたしなりの工夫をした。どんな工夫をしたか以下に記述する。自分のための忘備録として。
+書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードと link:https://qiita.com/twrcd1227/items/7bce18167fb02ec22729[Qiita記事] をよりどころとつつ、 link:https://htmx.org/[htmx] を活用したWebアプリケーションを開発する手法を学ぼうと思う。htmxそのものについてはhtmx本に譲る。webアプリケーションの動作環境をTypeScriptで構築すること、およびPlaywrightでテストを実装することについて、わたしなりの工夫をした。どんな工夫をしたか以下に記述する。自分のための忘備録として。
 
 === 狙い
 
 - わたしはhtmxを理解するためにhtmx本のサンプルコードを写経して動かしたい。
 - htmxを採用したHTMLをブラウザ上で開いて動きを確認するためにはバックエンドとしてのwebアプリケーションが必要だ。htmx本の著者はPythonで書いたwebアプリケーションの link:https://github.com/tomo1227/htmx_book_app[ソースコード一式] をGitHubで公開している。それはさておき、わたしはwebアプリをTypeScriptで書きたい。
 - webアプリを link:https://bun.com/docs[bun] と link:https://hono.dev/[Hono] の上で構築したい。Node.jsとExpressではなくて。
-- htmx本はテストをどう書くかについて言及していない。わたしはまずテストを書いて、次にhtmx本のサンプルコードを写して、ひとつひとつ動作を確認するという手順でやりたい。test-first。だから link:https://playwright.dev/docs/intro[Playwright] でwebアプリをテストしよう。
+- htmx本はテストをどう書くかに触れていない。わたしはまずテストを書いて、次にhtmx本のサンプルコードを写して、ひとつひとつ動作を確認するという手順（いわゆるtest-first）でやりたい。だから link:https://playwright.dev/docs/intro[Playwright] でwebアプリをテストしよう。
 
 === わたしが取り組むべき課題
 
@@ -479,6 +479,151 @@ webアプリケーションを止めて再起動します。`http://localhost:30
 
 image::{PAGES_URL}/images/006_main_css_applied.png[]
 
+=== htmx構文を使ったページを作る
 
+htmx本の「Chapter02 htmxの基礎 SECTION-003 Ajax通信」のサンプルコードを写経しよう。`src/section3.tsx` を追加します。
 
+```
+// section3.tsx
+import type { FC } from 'hono/jsx'
+import { Layout }  from "./layout"
+
+export const Section3: FC = () => {
+    return (
+        <Layout>
+            <div class="section-contents">
+                <h1>Section3</h1>
+
+                <h2>hx-get</h2>
+                <button hx-get="/hello">クリック</button>
+
+                <h2>hx-post</h2>
+                <button hx-post="/hello">クリック</button>
+
+                <h2>hx-put</h2>
+                <button hx-put="/hello">クリック</button>
+
+                <h2>hx-patch</h2>
+                <button hx-patch="/hello">クリック</button>
+
+                <h2>hx-delete</h2>
+                <button hx-delete="/hello">クリック</button>
+            </div>
+        </Layout>
+    )
+}
+```
+
+そして `src/main.tsx` も修正します。いま追加した `src/section3.tsx` を組み込んで URL `http://localhost:3001/section3` に応答できるようにします。
+
+```
+// src/main.ts
+import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { Top } from './top';
+import { Section3 } from './section3';
+
+const app = new Hono();
+app.use('*', serveStatic({ root: './static'}))
+
+app.get('/', (c) => {
+    const messages = ['Hello htmx'];
+    return c.render(
+        <Top messages={ messages } />
+    )
+});
+
+app.get('/section3', (c) => {
+    const messages = ['Hello htmx']
+    return c.render(
+        <Section3 messages={messages} />
+    )
+})
+
+const server = serve({
+    port: 3001,
+    fetch: app.fetch
+})
+
+export default server;
+```
+
+ブラウザで `http://localhost:3001` を開き "Section3" へのリンクをクリックすると、さっきまでは "404 Not Found" だったのにかわって次のような画面が応答されました。
+
+image::{PAGES}/images/007_section3_before_action.png[]
+
+=== htmxでAjax通信する
+
+`http://localhost:3001/section3` をブラウザで開くと「クリック」とラベル付けされたボタンがいくつか表示されます。その一つをクリックしましたが、表面的には何の変化も起きません。DevToolのコンソールを見ると 404 Not Found のエラーが記録されていました。
+
+image::{PAGES_URL}/images/008_section3_click_404.png[]
+
+何が起きたのか？要点だけを述べます。htmxに関する詳細な説明が必要なら皆様も link:https://www.c-r.com/book/detail/1595[htmx本] を購入して読んでください。 `section3.tsx` のなかには下記のように ht-get属性が書いてある。
+
+```
+                <h2>hx-get</h2>
+                <button hx-get="/hello">クリック</button>
+```
+
+ボタンをクリックすると JavaScript `htmx.min.js` に実装されたイベントハンドラが反応する。イベントハンドラは URL `http://localhost:3001/hello` に対してHTTP GET要求を送信する。ところがwebアプリケーションがまだ `GET /hello` に応答する準備ができていないので、404 Not Foundを応答しました。
+
+`src/main.tsx` を修正して `GET /hello` に応答できるようにします。
+
+```
+// src/main.ts
+import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { Top } from './top';
+import { Section3 } from './section3';
+
+const app = new Hono();
+app.use('*', serveStatic({ root: './static'}))
+
+app.get('/', (c) => {
+    const messages = ['Hello htmx'];
+    return c.render(
+        <Top messages={ messages } />
+    )
+});
+
+app.get('/section3', (c) => {
+    const messages = ['Hello htmx']
+    return c.render(
+        <Section3 messages={messages} />
+    )
+})
+
+app.on(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '/hello', (c) => {
+    if (c.req.method == "GET") {
+        return c.render(<span style='color:#ff0000;'>GETリクエスト!</span>)
+    } else if (c.req.method == "POST") {
+        return c.render(<span style='color:#00bf00;'>POSTリクエスト!</span>)
+    } else if (c.req.method == "PUT") {
+        return c.render(<span style='color:#0000ff;'>PUTリクエスト!</span>)
+    } else if (c.req.method == "PATCH") {
+        return c.render(<span style='color:#ff00ff;'>PATCHリクエスト!</span>)
+    } else if (c.req.method == "DELETE") {
+        return c.render(<span style='color:#ff0000;'>DELETEリクエスト!</span>)
+    } else {
+        throw new Error('unexpected c.req.method=' + c.req.method)
+    }
+})
+
+const server = serve({
+    port: 3001,
+    fetch: app.fetch
+})
+
+export default server;
+```
+
+この修正をした後でブラウザで `http://localhost:3001/section3` を開き、「クリック」ボタンを押すと下記のような画面表示に遷移しました。
+
+image::{PAGES_URL}/images/009_section3_responded.png[]
+
+これでようやくhtmxが動いている様子を見ることができました。
+
+htmx本にはhtmxのたくさんの機能を紹介するサンプルコードが紹介されています。上記で `src/section3.jsx` を作ったのと同じようにして `section5.tsx`を追加し、`section6.tsx`を追加し、...という具合にhtmx本を読み進めることができます。
 

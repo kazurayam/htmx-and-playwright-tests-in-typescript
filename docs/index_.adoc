@@ -462,7 +462,7 @@ htmx本の著者によるサンプルコードのGitHubレポジトリから `tu
 
 - https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/tutorial.css
 
-URL `http://localhost:3001/htmx/htmx.min.js` をwebアプリのファイルパス `$PROJECT/static/htmx/htmx.min.js` に対応づける必要があります。`src/main.jsx` を修正します。
+詰めの仕事が残っています。URL `http://localhost:3001/htmx/htmx.min.js` をwebアプリのファイルパス `$PROJECT/static/htmx/htmx.min.js` に対応づける必要があります。`http://localhost:3001/styles/tutorial.css` を `$PROJECT/static/styles/tutorial.css` に対応させる必要があります。そこで `src/main.jsx` を修正します。
 
 ```
 // src/main.tsx
@@ -475,7 +475,7 @@ app.use('*', serveStatic({ root: './static' }))
 ...
 ```
 
-webアプリケーションをstop&restartして `http://localhost:3001` を開くと、CSSが適用されてページの見た目が変化したのがわかります。
+webアプリケーションを止めて再起動します。`http://localhost:3001` を開くとCSSが適用されてページの見た目が変わったのがわかります。
 
 image::{PAGES_URL}/images/006_main_css_applied.png[]
 

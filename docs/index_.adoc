@@ -30,7 +30,8 @@ Playwrightの公式ドキュメント link:https://playwright.dev/docs/intro[Get
 
 === bunをインストールする
 
-参考情報: https://bun.com/docs/installation
+参考情報: link:https://bun.com/docs/installation[bun公式 Installation]
+参考情報: link:https://t-cr.jp/article/c5h1j98oknorvak[Bun コマンド チートシート：bun install／run／x／test／build 一括早見表]
 
 ```
 $ curl -fsSL https://bun.com/install | bash
@@ -625,5 +626,110 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 これでようやくhtmxが動いている様子を見ることができました。
 
-htmx本にはhtmxのたくさんの機能を紹介するサンプルコードが紹介されています。上記で `src/section3.jsx` を作ったのと同じようにして `section5.tsx`を追加し、`section6.tsx`を追加し、...という具合にhtmx本を読み進めることができます。
+htmx本にはhtmxのたくさんの機能を紹介するサンプルコードが紹介されています。htmx本を読みながら、上記で `src/section3.jsx` を作ったのと同じようにして `section5.tsx`を追加し、`section6.tsx`を追加していくことができます。
+
+=== テストする
+
+==== テストコードを格納する場所として `tests` ディレクトリを追加する
+
+webアプリのコードを `src` ディレクトリに格納してきました。それとは別にテストコードを格納するために `tests` ディレクトリを作ります。
+
+```
+$ cd $PROJECT
+$ mkdir tests
+$ tree . -L 2
+.
+├── node_modules
+├── package.json
+├── README.md
+├── src
+│   ├── layout.tsx
+│   ├── main.tsx
+│   ├── section3.tsx
+│   └── top.tsx
+├── static
+│   ├── htmx
+│   └── styles
+├── tests
+└── tsconfig.json
+```
+
+==== テストコードの格納場所をbunに指示する設定
+
+参考情報: link:https://bun.com/docs/test/configuration#root[Test configuration - Bun, Test Discovery]
+
+`bun test` コマンド実行時に `tests` ディレクトリの中のテストコードを探し出すよう設定する。`bunfig.toml` ファイルを追加する。
+
+[source,typescript]
+----
+# PROJECT/bunfig.toml
+[test]
+root = "tests"  # scan for tests only in the "tests" directory
+----
+
+==== Playwrightライブラリをプロジェクトに追加する
+
+Playwrightのライブラリをプロジェクトに追加します。次のようにコマンドを投入する。
+
+```
+$ cd $PROJECT
+$ bun add -d @playwright/test
+$ bun add -d playwright-chromium
+```
+
+`playwright-chromium` パッケージはChromiumブラウザを含むパッケージでサイズが巨大です。わたしの環境ではダウンロードに4分以上かかった。気長に待て。
+
+
+
+[source,shell]
+----
+$ cd $PROJECT
+$ bun add -d @playwright/test
+bun add v1.3.14 (0d9b296a)
+
+installed @playwright/test@1.61.1 with binaries:
+ - playwright
+
+[6.79s] done
+
+$ bun add -d playwright-chromium
+bun add v1.3.14 (0d9b296a)
+
+installed playwright-chromium@1.61.1 with binaries:
+ - playwright
+
+[9.73s] done
+----
+
+
+=== PlaywrightのBrowser APIを使ってブラウザを操作するテストを書く
+
+ブラウザで `http://localhost:3001/section3` を開き最上部のボタンを押下すると、ボタンのラベルが "クリック" から "GETリクエスト!" という文字に置き換わりました。逆にいえば「web画面の最上部のボタンを押下すると、ボタンのラベルが "GETリクエスト!" に置き換わるはず」と言えます。webアプリがこの条件を満足しているかどうかを検証するテストをPlaywrightで実装し動かしてみます。
+
+[source,typescript]
+----
+include::{MY-APP_DIR}/tests/play-on-browser.test.ts[]
+----
+
+==== bun testコマンドでテストを実行する
+
+[source,shell]
+----
+$ cd $PROJECT
+$ bun test ./tests/play-on-browser.test.ts
+bun test v1.3.14 (0d9b296a)
+
+tests/play-on-browser.test.ts:
+browser.browserType().executablePath()=/Users/kazurayam/Library/Caches/ms-playwright/chromium-1228/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
+✓ Play on the Playwright Browser API > open browser, navigate to a URL, verify the content, close the browser [2744.18ms]
+
+ 1 pass
+ 0 fail
+ 3 expect() calls
+Ran 1 test across 1 file. [3.21s]
+----
+
+==== console.log("xxx")の代わりにロギングフレームワークを使う
+
+参考情報: link:https://qiita.com/hongminhee/items/fff0ce9c8ae50e70496b[Qiita「LogTape：JavaScript/TypeScript向けのシンプルで柔軟なロギングライブラリの紹介と使い方」]
 

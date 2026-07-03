@@ -132,6 +132,8 @@ Hello via Bun!
 
 予想通りの結果になりました。
 
+=== webアプリケーションのHTTPサーバを実装する
+
 次に `$PROJECT/index.ts` を下記のように書きかえよう。ポート番号 3000 をlistenするHTTPサーバを実装している。
 
 [source,typescript]
@@ -155,7 +157,7 @@ image::{PAGES_URL}/images/001_index.ts.png[]
 
 webサーバーを停止するにはコマンドラインで CTRL+C と入力します。
 
-=== Honoを導入する
+==== Honoを導入する
 
 参考情報: https://hono.dev/docs/getting-started/bun
 
@@ -258,7 +260,7 @@ image::{PAGES_URL}/images/002_main.ts.png[]
 
 `main.ts` が応答した `Hello Bun!` という文字がたしかに画面に表示されています。
 
-=== Honoで構築したwebアプリがlistenするIPポート番号を明示的に指定する
+==== Honoで構築したwebアプリがlistenするIPポート番号を明示的に指定する
 
 参考情報: https://hono.dev/docs/getting-started/nodejs#change-port-number
 
@@ -425,7 +427,7 @@ export const Layout: FC = (props) => {
 
 image::{PAGES_URL}/images/004_main_hono_jsx.png[004_main_hono_jsx]
 
-=== 静的なファイルを組み込む
+==== 静的なファイルを組み込む
 
 参考情報: https://hono.dev/docs/getting-started/nodejs#serve-static-files
 
@@ -480,7 +482,7 @@ webアプリケーションを止めて再起動します。`http://localhost:30
 
 image::{PAGES_URL}/images/006_main_css_applied.png[]
 
-=== htmx構文を使ったページを作る
+==== htmx構文を使ったページを作る
 
 htmx本の「Chapter02 htmxの基礎 SECTION-003 Ajax通信」のサンプルコードを写経しよう。`src/section3.tsx` を追加します。
 
@@ -628,7 +630,7 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 htmx本にはhtmxのたくさんの機能を紹介するサンプルコードが紹介されています。htmx本を読みながら、上記で `src/section3.jsx` を作ったのと同じようにして `section5.tsx`を追加し、`section6.tsx`を追加していくことができます。
 
-=== テストする
+=== テストをするための環境を整える
 
 ==== テストコードを格納する場所として `tests` ディレクトリを追加する
 
@@ -679,8 +681,6 @@ $ bun add -d playwright-chromium
 
 `playwright-chromium` パッケージはChromiumブラウザを含むパッケージでサイズが巨大です。わたしの環境ではダウンロードに4分以上かかった。気長に待て。
 
-
-
 [source,shell]
 ----
 $ cd $PROJECT
@@ -702,16 +702,36 @@ installed playwright-chromium@1.61.1 with binaries:
 ----
 
 
-=== PlaywrightのBrowser APIを使ってブラウザを操作するテストを書く
+==== PlaywrightのAPIを使ってブラウザを操作するテストを書く
 
-ブラウザで `http://localhost:3001/section3` を開き最上部のボタンを押下すると、ボタンのラベルが "クリック" から "GETリクエスト!" という文字に置き換わりました。逆にいえば「web画面の最上部のボタンを押下すると、ボタンのラベルが "GETリクエスト!" に置き換わるはず」と言えます。webアプリがこの条件を満足しているかどうかを検証するテストをPlaywrightで実装し動かしてみます。
+Playwrightが提供するBrowser APIライブラリを使ってテストがChromiumブラウザを起動し、Webサイト `http://example.com` を開いて、HTMLの中身を検証し、それが済んだらブラウザを開く、というテストを書きました。
 
 [source,typescript]
 ----
 include::{MY-APP_DIR}/tests/play-on-browser.test.ts[]
 ----
 
+冒頭の1行をみよ。
+
+[source,typescript]
+----
+import { describe, test, expect } from 'bun:test';
+----
+
+`test` と `expect` が `bun:test` からimportされていることに注目してほしい。
+
+Playwrightによるテストの書き方を教えるwebサイトは山ほどある。たとえば link:https://playwright.dev/docs/writing-tests["Playwright > Getting Started > Writing tests" By Microsoft]。そのサンプルコードはこう書いている。
+
+[source,typescript]
+----
+import { test, expect } from '@playwright/test';
+----
+
+`bun:test` からimportした `test` と `expect` と `@playwright/test` からimportした `test` と `expect` とはまったく別物だ。わたしはあえて `bun:test` を選んでテストを書くことにした。
+
 ==== bun testコマンドでテストを実行する
+
+テストを実行しましょう。bunに組み込まれたテストランナーを使います。
 
 [source,shell]
 ----
@@ -729,7 +749,53 @@ browser.browserType().executablePath()=/Users/kazurayam/Library/Caches/ms-playwr
 Ran 1 test across 1 file. [3.21s]
 ----
 
-==== console.log("xxx")の代わりにロギングフレームワークを使う
+テストコードがPlaywrightのAPIを経由してChromiumブラウザを立ち上げ、`http://example.com`を開き、数秒待ってブラウザを閉じる様子が見えました。
+
+image::{PAGES_URL}/images/010_play-on-browser.png[]
+
+
+=== ロギングフレームワーク LogTape を導入する
 
 参考情報: link:https://qiita.com/hongminhee/items/fff0ce9c8ae50e70496b[Qiita「LogTape：JavaScript/TypeScript向けのシンプルで柔軟なロギングライブラリの紹介と使い方」]
 
+console.log("xxx")でメッセージをコンソールに出力するのは簡単だがやり過ぎるとコンソールの表示がごちゃごちゃになり見づらくなる。ログを出力先をファイルに変更したいしたい。そこで link:https://www.npmjs.com/package/logtape[LogTape] というロギングフレームワークを導入します。
+
+コンソールでLogTapeを追加します。
+
+```
+$ cd $PROJECT
+$ bun add @logtape/logtape
+$ bun add @logtape/file
+```
+
+ログを出力するために `out` ディレクトリを追加します。
+
+```
+$ cd $PROJECT
+$ mkdir out
+```
+
+`tests/play-on-browser.test.ts` を下敷きとして別のテストコード `play-on-browser-using-logtape.test.ts` を書きました。
+
+[source,typescript]
+----
+include::{MY-APP_DIR}/tests/play-on-browser-using-logtape.test.ts[]
+----
+
+このテストを実行しました。
+
+```
+$ cd $PROJECT
+$ bun test ./tests/play-on-browser.test.ts
+$ bun test ./tests/play-on-browser.test.ts
+bun test v1.3.14 (0d9b296a)
+
+tests/play-on-browser.test.ts:
+browser.browserType().executablePath()=/Users/kazuakiurayama/Library/Caches/ms-playwright/chromium-1228/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
+✓ Play on the Playwright Browser API > open browser, navigate to a URL, verify the content, close the browser [21298.08ms]
+
+ 1 pass
+ 0 fail
+ 3 expect() calls
+Ran 1 test across 1 file. [21.63s]
+```

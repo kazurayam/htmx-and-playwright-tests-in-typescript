@@ -551,7 +551,7 @@ export default server;
 
 ブラウザで `http://localhost:3001` を開き "Section3" へのリンクをクリックすると、さっきまでは "404 Not Found" だったのにかわって次のような画面が応答されました。
 
-image::{PAGES}/images/007_section3_before_action.png[]
+image::{PAGES_URL}/images/007_section3_before_action.png[]
 
 ==== 3.6 htmxでAjax通信する
 
@@ -625,7 +625,7 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 これでようやくhtmxが動いている様子を見ることができました。
 
-htmx本にはhtmxのたくさんの機能を紹介するサンプルコードが紹介されています。htmx本を読みながら、上記で `src/section3.jsx` を作ったのと同じようにして `section5.tsx`を追加し、`section6.tsx`を追加していくことができます。
+htmx本にはhtmxのたくさんの機能を紹介するサンプルコードが紹介されています。htmx本を読みながら、上記で `src/section3.jsx` を作ったのと同じようにして `section4.tsx`を追加し、`section5.tsx`を追加していくことができます。
 
 === 4 テストの土台となる環境を作る
 
@@ -751,7 +751,7 @@ Ran 1 test across 1 file. [3.21s]
 image::{PAGES_URL}/images/010_play-on-browser.png[]
 
 
-=== ロギングフレームワーク LogTape を導入する
+==== 4.5 ロギングフレームワーク LogTape を導入する
 
 参考情報: link:https://qiita.com/hongminhee/items/fff0ce9c8ae50e70496b[Qiita「LogTape：JavaScript/TypeScript向けのシンプルで柔軟なロギングライブラリの紹介と使い方」]
 
@@ -820,12 +820,115 @@ tests/play-on-browser.test.ts:
 Ran 1 test across 1 file. [21.63s]
 ```
 
-console.log()によるメッセージが無くなってコンソールの表示がスッキリしました。いっぽうで `$PROJECT/out/my-app.log` ファイルが作られ、次のようなログが出力されました。
+console.log()によるメッセージが無くなってコンソールの表示がスッキリした。いっぽうで `$PROJECT/out/my-app.log` ファイルが作られ、次のようなログが出力されました。
 
 [source,text]
 ----
 2026-07-03 00:20:48.907 +00:00 [INF] my-app·play-on-browser.test: browser.browserType().executablePath()=/Users/kazuakiurayama/Library/Caches/ms-playwright/chromium-1228/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
 ----
 
-テストコードのみならずwebアプリ本体もロギングフレームワークを利用して、詳細なログ情報をファイルに出力することができます。
+テストコードのみならずwebアプリ本体もロギングフレームワークを利用して、詳細なログ情報をファイルに出力することができる。
 
+=== 5 htmx構文で実装されたwebページの動作をPlaywrightでテストする
+
+`bun run main` コマンドでwebアプリを起動し、ブラウザで `http://localhost:3001` を開きます。リンク "Section3" をクリックすると、htmxのサンプルコードが動作する画面 `http://localhost:3001/section3` が表示されます。この画面の中で「クリック」と表示されたボタンをマウスでclickすると「GETリクエスト!」に切り替わります。
+
+image::{PAGES_URL}/images/009_section3_responded.png[]
+
+clickに反応してボタンのラベルが切り替わるかどうかをテストしよう。そのようなテストをPlaywrightのAPIを利用して書きたい。テストを `bun test` コマンドで実行したい。どうすればいいのか？これが次のテーマです。
+
+==== 5.1 E2Eテストを実行する
+
+`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコードを `tests/section3.e2e.ts` に書きました。
+
+[source,typescript]
+----
+include::{MY-APP_DIR}/tests/section3.e2e.ts[]
+----
+
+`tests/section3.e2e.ts` を実行するには、`http://localhost:3001` の webアプリを起動しておく必要があります。操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
+
+```
+  ...
+  "scripts": {
+    "main": "bun run --hot src/main.tsx",
+    "testmain": "bun run --hot src/main.tsx & bun test ./tests/*.e2e.ts; kill $(ps aux | grep '[0-9] bun run --hot' | awk '{print $2}')",
+    ...
+```
+
+`testmain` サブコマンドを実行すると、まずwebアプリが起動します。それと並行して `tests` ディレクトリの中にあってファイル名の末尾が `.e2e.ts` であるテストが選択されて実行されます。全部のテストが終了するのを待って、webアプリが停止されます。
+
+```
+$ bun run testmain
+$ bun run --hot src/main.tsx & bun test ./tests/*.e2e.ts; kill $(ps aux | grep '[0-9] bun run --hot' | awk '{print $2}')
+bun test v1.3.14 (0d9b296a)
+
+tests/section3.e2e.ts:
+✓ test http://localhost:3001/section3 > click <button hx-get=/hello>, then the button should show GETリクエスト! [814.27ms]
+✓ test http://localhost:3001/section3 > click <button hx-post=/hello>, then the button should show POSTリクエスト! [354.32ms]
+✓ test http://localhost:3001/section3 > click <button hx-put=/hello>, then the button should show PUTリクエスト! [300.15ms]
+✓ test http://localhost:3001/section3 > click <button hx-patch=/hello>, then the button should show PATCHリクエスト! [304.47ms]
+✓ test http://localhost:3001/section3 > click <button hx-delete=/hello>, then the button should show DELETEリクエスト! [279.75ms]
+
+ 5 pass
+ 0 fail
+Ran 5 tests across 1 file. [3.78s]
+```
+
+==== E2Eテスト `tests/section3.e2e.ts`
+
+[source,typescript]
+----
+include::{MY-APP_DIR}/tests/section3.e2e.ts[]
+----
+
+すこし注釈をする。
+
+```
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
+import * as PW from '@playwright/test';
+...
+describe(`test ${url}`, async () => {
+    let driver: BrowserDriverChromium;
+    let page: PW.Page;
+    ...
+```
+
+`bun:test` からimportされてた `describe` と `test` を使っていることに注意してほしい。link:https://playwright.dev/docs/writing-tests#using-test-hooks[Playwright API] にも名前のよく似た `describe` と `test` があるのだが全く別のものだ。
+
+`import * as PW from '@playwright/test';` としてPlaywrightのAPIを `PW` という名前空間にまとめている。`PW.Page` はPlaywrightのPageクラスである。
+
+[source,typescript]
+----
+        const span: PW.Locator = page.getByText('GETリクエスト!');
+        await PW.expect(span).toBeVisible();
+----
+
+ここで `PW.expect` という名前で呼び出しているのはPlaywrightの `expect` である。`from bun:test`によってimportされた `expect` ではない。
+
+Playwrightの `page` オブジェクトと `locator` オブジェクトを使ってさまざまのactionを実行したり、DOM要素の状態を調べたりEventを捕捉したりすることができる。詳細な解説をネット上でたくさん見つけることができる。たとえばPlaywrightの公式ドキュメント link:https://playwright.dev/docs/writing-tests[Writing tests] を参照のこと。
+
+==== ヘルパクラス `BrowserDriverChromium.ts` と `browser-helpers.ts`
+
+`section3.e2e.ts` は `BrowserDriverChromium`クラスをimportしている。
+
+[source,typescript]
+----
+include::{MY-APP_DIR}/tests/BrowserDriverChromium.ts[]
+----
+
+`BrowserDriverChromium`オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードが簡便にブラウザを操作できるようにしている。
+
+`BrowserDriverChromium`は `tests/browser-helpers.ts` が実装するstaticな関数をcallしている。
+
+[source,typescript]
+----
+include::{MY-APP_DIR}/tests/browser-helpers.ts[]
+----
+
+`browser-helpers`の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
+
+
+=== 6. まとめ
+
+htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するには `bun` に組み込まれたテストランナーを使った。細い疑問点をひとつひとつ解決するのはけっこう難しいかったが、その分学びも多かった。上記ではhtmx本のSection3のhtmxサンプルとテストだけを紹介したが、わたしは同じやり方でhtmx本のほぼ全部を写経し学ぶことができた。

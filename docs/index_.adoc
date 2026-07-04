@@ -10,7 +10,7 @@
 - project version: {projectVersion}
 - publish date: {publishDate}
 
-書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードを読んで link:https://htmx.org/[htmx] を活用したwebアプリケーションを開発する手法を学ぼうと思う。htmxそのものについての解説はhtmx本に譲る。webアプリケーションの動作環境をTypeScriptで構築することと、Playwrightでend-to-endテストを実装することについて、わたしなりの工夫をした。どうやったか以下に記述する。
+書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードを読んで link:https://htmx.org/[htmx] を活用したwebアプリケーションを開発する手法を学ぼうと思う。htmxそのものについての解説はhtmx本に譲る。webアプリケーションをTypeScriptで構築することと、Playwrightでend-to-endテストを実装することについて、わたしなりの工夫をした。どうやったか以下に記述する。
 
 === 1 達成目標と技術的課題
 
@@ -838,16 +838,9 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 さていよいよテストを実装しましょう。clickに反応してボタンのラベルが切り替わるかどうかをテストしよう。そのようなテストをPlaywrightのAPIを利用して書きたい。テストを `bun test` コマンドで実行したい。どうすればいいのか？これが次のテーマです。
 
-==== 5.1 E2Eテストを実行する
+==== 5.2 E2Eテストを実行する
 
-`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコードを書きました。
-
-[source,typescript]
-----
-include::{MY-APP_DIR}/tests/section3.e2e.ts[]
-----
-
-`tests/section3.e2e.ts` を実行するには、`http://localhost:3001` の webアプリを起動しておく必要があります。`bun test` を実行して終了したら、webアプリを停止したい。タイピングが大変です。コマンド操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
+`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコード 'tests/section3.e2e.ts' を書きました。`tests/section3.e2e.ts` を実行するには、`http://localhost:3001` の webアプリを起動しておく必要があります。`bun test` を実行して終了したら、webアプリを停止したい。タイピングが大変です。コマンド操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
 
 ```
   ...

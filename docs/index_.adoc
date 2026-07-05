@@ -435,7 +435,7 @@ image::{PAGES_URL}/images/004_main_hono_jsx.png[004_main_hono_jsx]
 
 image::{PAGES_URL}/images/005_main_404NotFound.png[]
 
-なぜエラーが発生したかというと、`main.tsx`に次のコードが書いてある。
+なぜエラーが発生したかというと、`src/layout.tsx`に次のコードが書いてある。
 
 ```
                 ...
@@ -745,7 +745,7 @@ browser.browserType().executablePath()=/Users/kazurayam/Library/Caches/ms-playwr
 Ran 1 test across 1 file. [3.21s]
 ----
 
-テストコードがPlaywrightのAPIを経由してChromiumブラウザを立ち上げ、`http://example.com`を開き、数秒待ってブラウザを閉じる様子が見えました。
+テストコードがPlaywrightのAPIを経由してChromiumブラウザを立ち上げ `http://example.com` を開き、数秒待ってブラウザを閉じる様子が見えました。
 
 image::{PAGES_URL}/images/010_play-on-browser.png[]
 
@@ -754,7 +754,7 @@ image::{PAGES_URL}/images/010_play-on-browser.png[]
 
 - 参考情報: link:https://qiita.com/hongminhee/items/fff0ce9c8ae50e70496b[Qiita「LogTape：JavaScript/TypeScript向けのシンプルで柔軟なロギングライブラリの紹介と使い方」]
 
-console.log("xxx")でメッセージをコンソールに出力するのは簡単だがやり過ぎるとコンソールの表示がごちゃごちゃになり見づらくなる。ログを出力先をファイルに変更したい。そこで link:https://www.npmjs.com/package/logtape[LogTape] というロギングフレームワークを導入します。
+console.log("xxx")でメッセージをコンソールに出力するのは簡単で好ましいが、やり過ぎるとコンソールの表示がごちゃごちゃになり見づらくなる。ログを出力先をファイルに変更したい。そこで link:https://logtape.org[LogTape] というロギングフレームワークを導入します。
 
 `bun add` でLogTapeを追加します。
 
@@ -778,13 +778,13 @@ $ mkdir out
 include::{MY-APP_DIR}/tests/play-on-browser-using-logtape.test.ts[]
 ----
 
-元の `play-on-browser.test.ts` のなかで `console.log("....")` と書いていた行を `logger.info(...)` と書き換えています。
+元の `play-on-browser.test.ts` のなかで `console.log("...")` と書いていた行を `logger.info(...)` と書き換えています。
 
 この段階で `bun test ./tests/play-on-browser-using-logtape.test.ts` を実行してもまだLogTapeがログを出力しません。LogTapeを働かせるには設定を加える必要があります。 `$PROJECT/logtape.ts` ファイルを追加します。
 
 [source,typescript]
 ----
-include::{MY-APP_DIR}/bunfig.toml[]
+include::{MY-APP_DIR}/logtape.ts[]
 ----
 
 さらに `$PROJECT/bunfig.toml` を修正します。

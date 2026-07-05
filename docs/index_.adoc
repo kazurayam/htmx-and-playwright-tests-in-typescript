@@ -840,7 +840,7 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 ==== 5.2 E2Eテストを実行する
 
-`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコード 'tests/section3.e2e.ts' を書きました。`tests/section3.e2e.ts` を実行するには、`http://localhost:3001` の webアプリを起動しておく必要があります。`bun test` を実行して終了したら、webアプリを停止したい。タイピングが大変です。コマンド操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
+`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコード `tests/section3.e2e.ts` を書きました。`tests/section3.e2e.ts` を実行する直前に、あらかじめ `http://localhost:3001` の webアプリを起動しておく必要があります。 `bun test` が終了したらwebアプリを停止したい。こうした操作をコマンドラインで繰り返したらタイピングが大変です。コマンド操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
 
 ```
   ...
@@ -875,7 +875,7 @@ Ran 5 tests across 1 file. [3.78s]
 
 ==== 5.2 E2Eテスト `tests/section3.e2e.ts`
 
-`http://localhost:3001/section3` に対するGET要求に応答されたHTMLをテストするコードを書きました。
+ブラウザに `http://localhost:3001/section3` を表示した状態でボタンをクリックしサーバからの応答を画面に反映するまでの一連の動作をテストするコードを書きました。
 
 [source,typescript]
 ----

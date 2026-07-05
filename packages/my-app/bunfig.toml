@@ -1,0 +1,4 @@
+# $PROJECT/bunfig.toml
+[test]
+root = "tests"  # scan for tests only in the "tests" directory
+preload = [ "./logtape.ts" ]

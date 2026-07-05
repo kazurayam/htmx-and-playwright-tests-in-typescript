@@ -908,7 +908,7 @@ describe(`test ${url}`, async () => {
         await PW.expect(span).toBeVisible();
 ----
 
-ここで `PW.expect` という名前で呼び出しているのはPlaywrightの `expect` である。`from bun:test`によってimportされた `expect` ではありません。
+ここで `PW.expect` という名前で呼び出しているのはPlaywrightの `expect` である。 `from bun:test` によってimportされた `expect` ではありません。
 
 ===== Playwrightのpageとlocatorとexpect
 
@@ -927,19 +927,19 @@ Playwrightの `page` オブジェクトと `locator` オブジェクトを使っ
 include::{MY-APP_DIR}/tests/BrowserDriverChromium.ts[]
 ----
 
-`BrowserDriverChromium`オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように細部を隠す役を果たしています。
+`BrowserDriverChromium` オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように細部を隠す役を果たしています。
 
-`BrowserDriverChromium`は `tests/browser-helpers.ts` が実装するstaticな関数をcallしている。
+`BrowserDriverChromium` は `tests/browser-helpers.ts` が実装するstaticな関数をcallしている。
 
 [source,typescript]
 ----
 include::{MY-APP_DIR}/tests/browser-helpers.ts[]
 ----
 
-`browser-helpers`の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す役を果たします。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
+`browser-helpers` の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す役を果たします。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
 
 
 === 6. まとめ
 
-htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するに `bun` に組み込まれたテストランナーを使った。htmxを使ったwebアプリをPlaywrightでテストするという事例の紹介はネット上に見当たらない（と思う）。誰かの役に立てばいいなと思っています。
+htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するのにbunに組み込まれたテストランナーを使った。Playwrightに関するドキュメントの多くは `npx playwright XXXX` というコマンドを使えと書いているが、あえてその方法をとらなかった。htmxを使ったwebアプリをPlaywrightでテストするという事例の紹介はネット上に見当たらない（と思う）。誰かの役に立てばいいなと思っています。
 

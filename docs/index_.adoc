@@ -2,8 +2,9 @@
 :REPOS_URL: https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript
 :PAGES_URL: https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript
 :MY-APP_DIR: ../packages/my-app
-:projectVersion: 1.0.0
-:publishDate: 2026-07-04
+:TODO-APP_DIR: ../packages/todo-app
+:projectVersion: 1.1.0
+:publishDate: 2026-07-12
 
 == Htmx and Playwright Tests in TypeScript
 
@@ -938,8 +939,350 @@ include::{MY-APP_DIR}/tests/browser-helpers.ts[]
 
 `browser-helpers` の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す役を果たします。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
 
+=== 6. ToDoアプリ
 
-=== 6. まとめ
+htmx本のCHAPTER07「サンプルアプリの作成」にToDoアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの link:https://github.com/tomo1227/htmx_book_app/blob/main/src/todo.py[Python言語による実装] をGitHubで公開している。それと同等のものをわたしはTypeScriptでbunとHonoを基盤として実装し、Playwrightによるテストも実装した。その成果物を以下で紹介する。
+
+なおhtmx本の CHAPTER01 から CHAPTER06 までの内容に対応するコードを `packages/my-app` というサブディレクトリに格納した。それに加えて CHAPTER07 のToDoアプリのコードを `packages/todo-app` というサブディレクトリに格納した。つまりひとつのGitレポジトリの中に複数のパッケージを収めた。いわゆる「monorepo」である。モノレポの作り方も説明する。
+
+==== 6.1 ToDoアプリをTypeScriptで実装する
+
+`packages` ディレクトリにcdしたあと `bun init todo-app` とやって `packages/todo-app` ディレクトリを作り、初期設定されたファイル一式を作った。
+
+```
+$ cd packages
+$ bun init -y todo-app
+$ cd todo-app
+$ tree . -L 2
+.
+├── bun.lock
+├── CLAUDE.md
+├── index.ts
+├── node_modules
+│   ├── @types
+│   ├── bun-types
+│   ├── typescript
+│   └── undici-types
+├── package.json
+├── README.md
+└── tsconfig.json
+```
+
+ToDoアプリのために外部ライブラリをインストールした。
+
+```
+$ bun add hono
+$ bun add @hono/node-server
+$ bun add @logtape/logtape
+$ bun add @logtape/file
+```
+
+ToDoアプリのテストのために外部ライブラリをインストールした
+
+```
+$ bun add -d bun-types
+$ bun add -d @types/bun
+$ bun add -d @playwright/test
+```
+
+`packages/todo-app/src/todo.tsx` を実装した。
+
+[source,typescript]
+----
+include::{TODO-APP_DIR}/src/todo.tsx[]
+----
+
+`packages/src/top.tsx` を実装した。
+
+[source,typescript]
+----
+include::{TODO-APP_DIR}/src/top.tsx[]
+----
+
+`packages/src/layout.tsx` を実装した。
+
+[source,typescript]
+----
+include::{TODO-APP_DIR}/src/layout.tsx[]
+----
+
+`packages/src/task.tsx` を実装した。
+
+[source,typescript]
+----
+include::{TODO-APP_DIR}/src/task.tsx[]
+----
+
+JSXを使うためには `packages/todo-app/tsconfig.json` に設定を加える必要がある。たとえばこんなふうに。
+
+[source,json]
+----
+include::{TODO-APP_DIR}/tsconfig.json[]
+----
+
+`packages/todo-app/static` ディレクトリを追加しその下に下記のような静的ファイルを作った。
+
+```
+$ tree static
+static
+├── favicon.ico
+├── htmx
+│   ├── ext
+│   │   └── json-enc.js
+│   └── htmx.min.js
+├── styles
+│   └── todo.css
+└── sweetalert
+    ├── custom-dialog.js
+    └── sweetalert2.all.min.js
+```
+
+- `static/styles/todo.css` ファイルは https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/todo.css から拝借した。
+
+以下の３つのファイルについては htmx本のCHAPTER07の解説を読んでいただきたい。
+
+- `static/htmx/ext/json-enc.js`
+- `sweetalert2.all.min.js`
+- `custom-dialog.js`
+
+`packages/todo-app/package.json` に `"scripts": "bun run -hot ./src/todo.tsx"` を追加した。
+
+```
+{
+  ...
+  "scripts": {
+    "todo": "bun --hot ./src/todo.tsx"
+  },
+  ...
+```
+
+コマンドラインで ToDoアプリを起動することができた。
+
+```
+$ cd $PROJECT/playwright/todo-app
+$ bun run todo
+```
+
+ブラウザで http://localhost:3000 を開くと ToDo App が応答された。
+
+image:{PAGES_URL}/images/011_todo-app.png[]
+
+以上でToDoアプリを実装することができた。
+
+==== 6.2 モノレポにする
+
+Gitレポジトリのルート・ディレクトリにcdしてtreeコマンドを実行するとこんなふうになっている。
+
+```
+$ tree -L 3 .
+.
+├── bun.lock
+├── node_modules
+│   └── @types
+│       └── bun -> ../.bun/@types+bun@1.3.14/node_modules/@types/bun
+├── package.json
+├── packages
+│   ├── my-app
+│   │   ├── bun.lock
+│   │   ├── bunfig.toml
+│   │   ├── CLAUDE.md
+│   │   ├── index.ts
+│   │   ├── logtape.ts
+│   │   ├── node_modules
+│   │   ├── out
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── src
+│   │   ├── static
+│   │   ├── tests
+│   │   └── tsconfig.json
+│   └── todo-app
+│       ├── bun.lock
+│       ├── CLAUDE.md
+│       ├── index.ts
+│       ├── node_modules
+│       ├── out
+│       ├── package.json
+│       ├── README.md
+│       ├── src
+│       ├── static
+│       ├── tests
+│       └── tsconfig.json
+└── README.md
+```
+
+`packages` ディレクトリの下に `my-app` パッケージと `todo-app` パッケージがある。それぞれのWebアプリはどちらもHonoを基盤としてJSXとhtmxを利用したアプリであって独立している。`todo-app`のWebアプリのコードが`my-app`のコードに依存したりはしていない。これだけなら「モノレポ」の構成を作る必要はない。ところが詳しくは後で述べるが `todo-app` のテストコードが `my-app` の中にある `BrowserDriverChromium` class を参照して使いたい。だから `todo-app` が `my-app` を参照できるようにbunの設定を作る必要があります。つまり「monorepo」を作ります。
+
+===== 6.2.1 workspacesの定義
+
+Gitレポジトリのルート・ディレクトリの直下にある `package.json` を次のように書きます。
+
+[source,json]
+----
+include::../package.json[]
+----
+
+ここで `workspaces` プロパティが重要です。
+
+```
+{
+    ...
+    "workspaces": [
+        "packages/*"
+    ],
+    ...
+```
+
+これがあるので `packages` ディレクトリの下にある `my-app` ディレクトリと `todo-app` ディレクトリがそれぞれ link:https://bun.com/docs/pm/workspaces[workspace] として認められることになります。
+
+===== パッケージの name に注意
+
+- 参考情報: link:https://docs.npmjs.com/cli/v11/configuring-npm/package-json#name[npm Docs / package.json]
+
+このプロジェクトには３つの `package.json` ファイルがありますが、その冒頭にある `name` プロパティの値をどうするかも重要です。
+
+npm Docの name に関する説明はこう述べています。
+
+[source]
+____
+If you plan to publish your package, the most important things in your package.json are the name and version fields as they will be required. The name and version together form an identifier that is assumed to be completely unique. Changes to the package should come along with changes to the version. If you don't plan to publish your package, the name and version fields are optional.
+____
+
+わたしはわたしのGitレポジトリ link:https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript[htmx-and-playwright-tests-in-typescript] の成果物をnpmにパブリッシュしようとは企んでいません。だからnmpレポジトリの中でuniqueな名前を与えなければならぬわけではありません。ただし `todo-app` が `my-app` の成果物を参照したいと企んでいます。それを可能にするには `todo-app` と `my-app` のパッケージ名を整った名前にしておくことが必須になります。だから仮にもnmpにパブリッシュできるようなユークな名前を付けるというのが実技として好ましい。
+
+`$PROJECT/package.json` の name をこう書きました。
+
+```
+{
+    "name": "@kazurayam/htmx-and-playwright-tests-in-typescript",
+```
+
+`packages/my-app/packages.json` の name をこう書きました。
+
+```
+{
+    "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app",
+```
+
+`packages/todo-app/packages.json` の name をこう書きました。
+
+```
+{
+    "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-my-todo",
+```
+
+つまりルートのpackageのnameの形式を `@kazurayam/repositoryName` とし、モノレポを構成するパッケージのnameを `@kazurayam/repositoryName-パッケージ名` という形式にしました。 `kazurayam` とはわたし個人のGitHubアカウントのNameです。これはおそらくGlobalにユニークな名前空間として使える。packageのnameをこの形にするのはわたし個人のやり方です。参考まで。
+
+REPOS直下の `package.json` で `"workspaces":["packages/*"]` を宣言し、`my-app` と `todo-app` の `package.json` のnameを適切に指定したら、REPOSにcdして下記のコマンドを実行します。
+
+```
+$ cd $REPOS
+$ bun install
+```
+
+するとbunが設定ファイルを読み込んで内部の管理情報を更新します。
+
+==== 6.3 ToDoアプリのためにPlaywrightのテストを書いた
+
+`packages/todo-app/tests/todo.e2e.ts` を実装した。
+
+[source,typescript]
+----
+include::{TODO-APP_DIR}/tests/todo.e2e.ts[]
+----
+
+この4行目にこう書いてあるのに注意願いたい。
+
+```
+import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
+```
+
+`todo.e2e.ts` はパッケージ '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app' が持っていてexportしているはずの `BrowserDriverChromium` をimportして使いたい、と書いてある。
+
+==== 6.4 BrowserDriverChromiumが参照できない
+
+ところがわたしが `todo.e2e.ts` を書いた時、VSCodeのエディタは下記のように下波線を表示して警告しました。
+
+image:{PAGES_URL}/images/012_ts2307.png[]
+
+[source]
+____
+Cannot find module '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app' or its corresponding type declarations. ts(2307)
+____
+
+このエラーを回避するために `packages/todo-app/packages.json` を訂正した。
+
+```
+{
+  "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-todo-app",
+  ...
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/bun": "^1.3.14",
+    "bun-types": "^1.3.14",
+    "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app": "workspace:*"
+  },
+  ...
+```
+
+`devDependencies` プロパティに `"@kazurayam/htmx-and-playwright-tests-in-typescript-my-app": "workspace:*"` を追記した。この変更をbunに伝える必要がある。ルートディレクトリに戻って再度
+
+```
+$ bun install
+```
+
+を実行した。
+
+もう一度VSCodeのエディタに戻ってみた。まだ下波線が表示されていた。ただし警告メッセージが別の物になっていた。
+
+image:{PAGES_URL}/images/013_ts2306.png[]
+
+[source]
+____
+File '/Users/kazurayam/github/htmx-and-playwright-tests-in-typescript/packages/my-app/index.ts' is not a module. ts(2306)
+____
+
+どういう意味だろうか？AIに尋ねてみた。曰く
+
+[source]
+____
+The error TS2306: File 'x' is not a module occurs when you try to import a file that TypeScript does not recognize as a module, usually because the file lacks an export statement. To fix this, ensure that the file you are importing from includes at least one export, making it a valid module.
+____
+
+`packages/my-app/package.json` ファイルの冒頭にこう書いてある.
+
+```
+{
+  "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app",
+  "module": "index.ts",
+  ...
+```
+
+`module` プロパティが `packages/my-app/index.ts` ファイルを指している。もう一度AIに聞いてみた。`module` プロパティって何？
+
+[source]
+____
+The **module property** in package.json is used to specify the entry point for ECMAScript modules (ESM) in a Node.js project, allowing the use of the import/export syntax. This property helps Node.js recognize which files to load as ESM, enhancing compatibility with modern JavaScript module systems.
+____
+
+なるほど。ということは `packages/my-app/index.ts` が `BrowserDriverChromium` を明示的にexportすればいい、のだろう。
+
+[source,typescript]
+----
+include::../packages/my-app/index.ts[]
+----
+
+修正を反映させるため、ルートディレクトリに戻って `bun install` コマンドを実行した。VSCodeのエディタで `todo.e2e.ts` を確認した。下波線が消えた。
+
+==== 6.5 todo-appでテストを実行
+
+
+
+
+
+
+
+=== 7. まとめ
 
 htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するのにbunに組み込まれたテストランナーを使った。Playwrightに関するドキュメントの多くは `npx playwright XXXX` というコマンドを使えと書いているが、あえてその方法をとらなかった。htmxを使ったwebアプリをPlaywrightでテストするという事例の紹介はネット上に見当たらない（と思う）。誰かの役に立てばいいなと思っています。
 

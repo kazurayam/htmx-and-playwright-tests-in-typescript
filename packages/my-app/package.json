@@ -4,16 +4,23 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "main": "bun run --hot src/main.tsx"
+    "main": "bun run --hot src/main.tsx",
+    "testmain": "bun run --hot src/main.tsx & bun test ./tests/*.e2e.ts; kill $(ps aux | grep '[0-9] bun run --hot' | awk '{print $2}')",
+    "testsection": "bun run --hot src/main.tsx & bun test ./tests/section3.e2e.ts; kill $(ps aux | grep '[0-9] bun run --hot' | awk '{print $2}')",
+    "testmisc": "bun test ./tests/*.test.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@playwright/test": "^1.61.1",
+    "@types/bun": "latest",
+    "playwright-chromium": "^1.61.1"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.6",
+    "@logtape/file": "^2.2.2",
+    "@logtape/logtape": "^2.2.2",
     "hono": "^4.12.27"
   }
 }

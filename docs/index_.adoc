@@ -10,7 +10,7 @@
 - project version: {projectVersion}
 - publish date: {publishDate}
 
-書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードを読んで link:https://htmx.org/[htmx] を活用したwebアプリケーションを開発する手法を学ぼうと思う。htmxそのものについての解説はhtmx本に譲る。webアプリケーションの動作環境をTypeScriptで構築することと、Playwrightでend-to-endテストを実装することについて、わたしなりの工夫をした。どうやったか以下に記述する。
+書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードを読んで link:https://htmx.org/[htmx] を活用したwebアプリケーションを開発する手法を学ぼうと思う。htmxそのものについての解説はhtmx本に譲る。webアプリケーションをTypeScriptで構築することと、Playwrightでend-to-endテストを実装することについて、わたしなりの工夫をした。どうやったか以下に記述する。
 
 === 1 達成目標と技術的課題
 
@@ -435,7 +435,7 @@ image::{PAGES_URL}/images/004_main_hono_jsx.png[004_main_hono_jsx]
 
 image::{PAGES_URL}/images/005_main_404NotFound.png[]
 
-なぜエラーが発生したかというと、`main.tsx`に次のコードが書いてある。
+なぜエラーが発生したかというと、`src/layout.tsx`に次のコードが書いてある。
 
 ```
                 ...
@@ -745,7 +745,7 @@ browser.browserType().executablePath()=/Users/kazurayam/Library/Caches/ms-playwr
 Ran 1 test across 1 file. [3.21s]
 ----
 
-テストコードがPlaywrightのAPIを経由してChromiumブラウザを立ち上げ、`http://example.com`を開き、数秒待ってブラウザを閉じる様子が見えました。
+テストコードがPlaywrightのAPIを経由してChromiumブラウザを立ち上げ `http://example.com` を開き、数秒待ってブラウザを閉じる様子が見えました。
 
 image::{PAGES_URL}/images/010_play-on-browser.png[]
 
@@ -754,7 +754,7 @@ image::{PAGES_URL}/images/010_play-on-browser.png[]
 
 - 参考情報: link:https://qiita.com/hongminhee/items/fff0ce9c8ae50e70496b[Qiita「LogTape：JavaScript/TypeScript向けのシンプルで柔軟なロギングライブラリの紹介と使い方」]
 
-console.log("xxx")でメッセージをコンソールに出力するのは簡単だがやり過ぎるとコンソールの表示がごちゃごちゃになり見づらくなる。ログを出力先をファイルに変更したい。そこで link:https://www.npmjs.com/package/logtape[LogTape] というロギングフレームワークを導入します。
+console.log("xxx")でメッセージをコンソールに出力するのは簡単で好ましいが、やり過ぎるとコンソールの表示がごちゃごちゃになり見づらくなる。ログを出力先をファイルに変更したい。そこで link:https://logtape.org[LogTape] というロギングフレームワークを導入します。
 
 `bun add` でLogTapeを追加します。
 
@@ -778,13 +778,13 @@ $ mkdir out
 include::{MY-APP_DIR}/tests/play-on-browser-using-logtape.test.ts[]
 ----
 
-元の `play-on-browser.test.ts` のなかで `console.log("....")` と書いていた行を `logger.info(...)` と書き換えています。
+元の `play-on-browser.test.ts` のなかで `console.log("...")` と書いていた行を `logger.info(...)` と書き換えています。
 
 この段階で `bun test ./tests/play-on-browser-using-logtape.test.ts` を実行してもまだLogTapeがログを出力しません。LogTapeを働かせるには設定を加える必要があります。 `$PROJECT/logtape.ts` ファイルを追加します。
 
 [source,typescript]
 ----
-include::{MY-APP_DIR}/bunfig.toml[]
+include::{MY-APP_DIR}/logtape.ts[]
 ----
 
 さらに `$PROJECT/bunfig.toml` を修正します。
@@ -838,16 +838,9 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 さていよいよテストを実装しましょう。clickに反応してボタンのラベルが切り替わるかどうかをテストしよう。そのようなテストをPlaywrightのAPIを利用して書きたい。テストを `bun test` コマンドで実行したい。どうすればいいのか？これが次のテーマです。
 
-==== 5.1 E2Eテストを実行する
+==== 5.2 E2Eテストを実行する
 
-`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコードを書きました。
-
-[source,typescript]
-----
-include::{MY-APP_DIR}/tests/section3.e2e.ts[]
-----
-
-`tests/section3.e2e.ts` を実行するには、`http://localhost:3001` の webアプリを起動しておく必要があります。`bun test` を実行して終了したら、webアプリを停止したい。タイピングが大変です。コマンド操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
+`http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコード `tests/section3.e2e.ts` を書きました。`tests/section3.e2e.ts` を実行する直前に、あらかじめ `http://localhost:3001` の webアプリを起動しておく必要があります。 `bun test` が終了したらwebアプリを停止したい。こうした操作をコマンドラインで繰り返したらタイピングが大変です。コマンド操作を簡便にするために `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
 
 ```
   ...
@@ -882,7 +875,7 @@ Ran 5 tests across 1 file. [3.78s]
 
 ==== 5.2 E2Eテスト `tests/section3.e2e.ts`
 
-`http://localhost:3001/section3` に対するGET要求に応答されたHTMLをテストするコードを書きました。
+ブラウザに `http://localhost:3001/section3` を表示した状態でボタンをクリックしサーバからの応答を画面に反映するまでの一連の動作をテストするコードを書きました。
 
 [source,typescript]
 ----
@@ -915,7 +908,7 @@ describe(`test ${url}`, async () => {
         await PW.expect(span).toBeVisible();
 ----
 
-ここで `PW.expect` という名前で呼び出しているのはPlaywrightの `expect` である。`from bun:test`によってimportされた `expect` ではありません。
+ここで `PW.expect` という名前で呼び出しているのはPlaywrightの `expect` である。 `from bun:test` によってimportされた `expect` ではありません。
 
 ===== Playwrightのpageとlocatorとexpect
 
@@ -934,19 +927,19 @@ Playwrightの `page` オブジェクトと `locator` オブジェクトを使っ
 include::{MY-APP_DIR}/tests/BrowserDriverChromium.ts[]
 ----
 
-`BrowserDriverChromium`オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように細部を隠す役を果たしています。
+`BrowserDriverChromium` オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように細部を隠す役を果たしています。
 
-`BrowserDriverChromium`は `tests/browser-helpers.ts` が実装するstaticな関数をcallしている。
+`BrowserDriverChromium` は `tests/browser-helpers.ts` が実装する関数をcallしている。
 
 [source,typescript]
 ----
 include::{MY-APP_DIR}/tests/browser-helpers.ts[]
 ----
 
-`browser-helpers`の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す役を果たします。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
+`browser-helpers` の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す役を果たします。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
 
 
 === 6. まとめ
 
-htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するに `bun` に組み込まれたテストランナーを使った。htmxを使ったwebアプリをPlaywrightでテストするという事例の紹介はネット上に見当たらない（と思う）。誰かの役に立てばいいなと思っています。
+htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するのにbunに組み込まれたテストランナーを使った。Playwrightに関するドキュメントの多くは `npx playwright XXXX` というコマンドを使えと書いているが、あえてその方法をとらなかった。htmxを使ったwebアプリをPlaywrightでテストするという事例の紹介はネット上に見当たらない（と思う）。誰かの役に立てばいいなと思っています。
 

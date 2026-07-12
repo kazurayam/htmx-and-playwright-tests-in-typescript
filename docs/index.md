@@ -1090,7 +1090,7 @@ Playwrightの `page` オブジェクトと `locator` オブジェクトを使っ
 
 `BrowserDriverChromium` オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように細部を隠す役を果たしています。
 
-`BrowserDriverChromium` は `tests/browser-helpers.ts` が実装するstaticな関数をcallしている。
+`BrowserDriverChromium` は `tests/browser-helpers.ts` が実装する関数をcallしている。
 
     // tests/browser-helpers.ts
     import type { Browser, BrowserContext, Page } from '@playwright/test';

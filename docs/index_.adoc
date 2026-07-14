@@ -1281,7 +1281,7 @@ $ cd $ROOT
 $ bun install
 ```
 
-を実行した。もう一度VSCodeのエディタに戻ってみた。あれ？まだ下波線が表示されていた。ただし警告メッセージが別の物になっていた。
+を実行した。もう一度VSCodeのエディタに戻ってみた。あれ？まだ下波線が表示されていた。ただし別の警告メッセージだった。
 
 image:{PAGES_URL}/images/013_ts2306.png[]
 
@@ -1297,7 +1297,7 @@ ____
 The error TS2306: File 'x' is not a module occurs when you try to import a file that TypeScript does not recognize as a module, usually because the file lacks an export statement. To fix this, ensure that the file you are importing from includes at least one export, making it a valid module.
 ____
 
-どういうことか？ちなみに `packages/my-app/package.json` ファイルの冒頭にこう書いてある.
+`$MYAPP/package.json` ファイルの冒頭にこう書いてある.
 
 ```
 {
@@ -1313,24 +1313,39 @@ ____
 The **module property** in package.json is used to specify the entry point for ECMAScript modules (ESM) in a Bun project, allowing the use of the import/export syntax. This property helps Bun recognize which files to load as ESM, enhancing compatibility with modern JavaScript module systems.
 ____
 
-なるほど。 `todo-app.e2e.ts` が `my-app` パッケージTS2306のエラーを解消するには `packages/my-app/index.ts` が `BrowserDriverChromium` を明示的にexportすればいいのだろう。やってみた。
+なるほど。`module` プロパティの値が `$MYAPP/index.ts` を指しているので、`index.ts` が `BrowserDriverChromium` をexportしていることを期待していたが、そうなっていない。だからTS2306エラーが発生した、ということのようだ。どうすればいいのか？
+
+JavaScriptのimportとexportには歴史的経緯があって一筋縄でいかない。学び直しが必要と思ったので下記の解説記事を読んだ。
 
 - 参考情報: link:https://zenn.dev/yuichi_ai/articles/package-json-fields-complete-guide#exports%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB%E3%83%89%E8%A9%B3%E8%A7%A3[Zenn package.jsonの全フィールド解説：main・exports・type・enginesの正しい使い方 / exportsフィールド詳解]
 
+いろいろ試したあげく、２箇所手を加えた。第一に `$MYAPP/src/main.tsx` の末尾に1行挿入した。
+
 [source,typescript]
 ----
-include::../packages/my-app/index.ts[]
+// src/main.tsx
+...
+export default server;
+
+export { BrowserDriverChromium } from '../tests/BrowserDriverChromium.ts';
+----
+
+第二に `$MYAPP/package.json` の `module` プロパティを削除し `exports` プロパティを挿入した。
+
+[source,json]
+----
+include::{MYAPP}/package.json[lines=1..6]
 ----
 
 修正を反映させるため、ルートディレクトリに戻って 次のコマンドを実行した。
 
 [source,terminal]
 ----
-$ cd $REPOS
+$ cd $ROOT
 $ bun install
 ----
 
-VSCodeのエディタで `todo.e2e.ts` を確認した。するとようやく下波線が消えた。
+VSCodeのエディタで `todo.e2e.ts` を確認した。するとようやく下波線が消えた。これでいけるはず。
 
 ==== 6.5 todo-appでテストを実行
 

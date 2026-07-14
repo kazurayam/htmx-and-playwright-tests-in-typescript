@@ -1,4 +1,4 @@
-// $PROJECT/logtape.ts
+// my-app/logtape.ts
 import { configure, getConsoleSink } from "@logtape/logtape";
 import { getFileSink } from "@logtape/file";
 

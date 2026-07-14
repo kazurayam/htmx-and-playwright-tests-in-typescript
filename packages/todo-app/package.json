@@ -1,0 +1,25 @@
+{
+  "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-todo-app",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "todo": "bun --hot ./src/todo.tsx",
+    "testtodo": "bun --hot src/todo.tsx & bun test ./tests/*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/bun": "^1.3.14",
+    "bun-types": "^1.3.14",
+    "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.0.8",
+    "@logtape/file": "^2.2.4",
+    "@logtape/logtape": "^2.2.4",
+    "hono": "^4.12.29"
+  }
+}

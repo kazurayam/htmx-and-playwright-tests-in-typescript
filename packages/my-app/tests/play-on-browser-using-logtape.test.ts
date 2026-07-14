@@ -1,4 +1,4 @@
-// $PROJECT/tests/play-on-browser-using-logtape.test.ts
+// tests/play-on-browser-using-logtape.test.ts
 import { describe, test, expect } from 'bun:test';
 import type { Browser, BrowserContext, Page } from '@playwright/test';
 import { chromium } from '@playwright/test';

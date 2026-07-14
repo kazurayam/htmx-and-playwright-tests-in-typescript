@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "types": [
+        "bun-types"
+    ],
+    "composite": true
+  },
+  "references": [
+    { "path": "../my-app" }  // 依存するパッケージを指定
+  ]
+}

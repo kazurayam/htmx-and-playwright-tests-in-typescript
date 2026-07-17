@@ -949,14 +949,14 @@ Playwrightの `page` オブジェクトと `locator` オブジェクトを使っ
 
 ==== 5.3 ヘルパ `BrowserDriverChromium.ts` と `browser-helpers.ts`
 
-`section3.e2e.ts` は `BrowserDriverChromium`クラスをimportしている。
+`section3.e2e.ts` は `BrowserDriverChromium` クラスをimportしている。
 
 [source,typescript]
 ----
 include::{MYAPP}/tests/BrowserDriverChromium.ts[]
 ----
 
-`BrowserDriverChromium` オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように詳細を隠蔽する役を果たしています。今回、わたしがこの記事を書くにあたって一番苦労したのが `BrowserDriverChromium`クラスです。
+`BrowserDriverChromium` オブジェクトはChromiumブラウザを立ち上げたり、URLにnavigateしたり、ブラウザをクローズするといった操作を実装している。テストコードがPlaywrightの `Browser` クラスと `BrowserContext` クラスを意識することなく `Page` オブジェクトだけを意識すればいいように詳細を隠蔽する役を果たしています。今回、わたしがこの記事を書くにあたって一番苦労したのが `BrowserDriverChromium` クラスです。
 
 `BrowserDriverChromium` は `tests/browser-helpers.ts` の関数をcallしている。
 

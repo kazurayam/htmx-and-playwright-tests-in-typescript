@@ -19,7 +19,7 @@ await configure({
         { category: ["logtape", "meta"], lowestLevel: "warning", sinks: ["console"] },
     ],
 });
-const logger = getLogger(["my-app", "main"]);
+const logger = getLogger(["todo-app", "todo"]);
 
 const app = new Hono();
 app.use('*', serveStatic({ root: './static' }))

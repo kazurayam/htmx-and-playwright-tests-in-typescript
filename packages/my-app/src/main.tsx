@@ -1,6 +1,5 @@
 // src/main.ts
 import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Top } from './top';
 import { Section3 } from './section3';
@@ -39,11 +38,9 @@ app.on(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '/hello', (c) => {
     }
 })
 
-const server = serve({
+export default {
     port: 3001,
     fetch: app.fetch
-})
-
-export default server;
+}
 
 export { BrowserDriverChromium } from '../tests/BrowserDriverChromium.ts';

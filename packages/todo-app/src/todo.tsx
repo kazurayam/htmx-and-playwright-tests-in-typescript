@@ -9,17 +9,17 @@ import { getFileSink } from "@logtape/file";
 await configure({
     sinks: {
         console: getConsoleSink(),
-        file: getFileSink("./out/my-app.log", {
+        file: getFileSink("./out/todo-app.log", {
             flushInterval: 1000, // flush every 1 second
             nonBlocking: true,
         })
     },
     loggers: [
-        { category: ["my-app"], lowestLevel: "debug", sinks: ["file"] },
+        { category: ["todo-app"], lowestLevel: "debug", sinks: ["file"] },
         { category: ["logtape", "meta"], lowestLevel: "warning", sinks: ["console"] },
     ],
 });
-const logger = getLogger(["my-app", "main"]);
+const logger = getLogger(["todo-app", "todo"]);
 
 const app = new Hono();
 app.use('*', serveStatic({ root: './static' }))
@@ -55,4 +55,7 @@ app.delete("/delete", async (c) => {
     return c.text('');
 });
 
-export default app;
+export default {
+    port: 3000,
+    fetch: app.fetch
+};

@@ -41,13 +41,13 @@
             <h1>Chat App</h1>
             <div>
                 <input type="text" id="message" name="message" placeholder="メッセージ" required>
-                <input type="button" value="送信">
+                <input type="button" value="送信" id="btn">
             </div>
             <div id="messages"></div>
         </div>
         <script>
-            let msg = document.querySelector('input[name="message"]');
-            let btn = document.querySelector('input[type="button"]');
+            let msg = document.querySelector('input#message');
+            let btn = document.querySelector('input#btn');
             btn.addEventListener('click', function (event) {
                 sendMessage(event);
                 msg.value = '';

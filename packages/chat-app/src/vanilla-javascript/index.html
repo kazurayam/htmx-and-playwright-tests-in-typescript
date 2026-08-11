@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat App</title>
+        <link rel="stylesheet" href="/styles/chat.css">
+        <link rel=""icon" href="/favicon.ico">
+        <script>
+            let echo_service;
+            append = function (text) {
+                document
+                .getElementById('messages')
+                .insertAdjacentHTML('beforeend',
+                    '<span class="message">' + text + '</span>');
+            };
+            window.onload = function () {
+                echo_service = new WebSocket("ws://127.0.0.1:8000/chat");
+                echo_service.onmessage = function (event) {
+                    append(event.data);
+                };
+                echo_service.onopen = function () {
+                    append("🚀 Connected to WebSocket!");
+                };
+                echo_service.onclose = function () {
+                    append("Connection closed");
+                };
+                echo_service.onerror = function () {
+                    append("Error happens");
+                };
+            }
+
+            function sendMessage() {
+                let message = document.getElementById('message').value;
+                echo_service.send(message);
+            }
+        </script>
+    </head>
+    <body>
+        <div id="chat-app">
+            <h1>Chat App</h1>
+            <div>
+                <input type="text" id="message" name="message" placeholder="メッセージ" required>
+                <input type="button" value="送信">
+            </div>
+            <div id="messages"></div>
+        </div>
+        <script>
+            let msg = document.querySelector('input[name="message"]');
+            let btn = document.querySelector('input[type="button"]');
+            btn.addEventListener('click', function (event) {
+                sendMessage(event);
+                msg.value = '';
+            })
+        </script>
+    </body>
+</html>

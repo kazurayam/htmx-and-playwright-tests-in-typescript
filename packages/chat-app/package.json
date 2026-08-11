@@ -1,0 +1,20 @@
+{
+  "name": "chat-app",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "vanilla-index": "bun --hot ./src/vanilla-javascript/index.ts",
+    "vanilla-broadcast": "bun --hot ./src/vanilla-javascript/broadcast.ts",
+    "htmx-index": "bun --hot ./src/htmx-ws/index.tsx",
+    "htmx-broadcast": "bun --hot ./src/htmx-ws/broadcast.tsx",
+    "dev": "bun run htmx-broadcast",
+    "test-vanilla-index": "bun ./src/vanilla-javascript/index.ts; bun test ./tests/"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

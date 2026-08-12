@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat App</title>
+        <link rel="stylesheet" href="/styles/chat.css">
+        <link rel="icon" href="/favicon.ico">
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"
+            integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"
+            crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.4"
+            integrity="sha384-1RwI/nvUSrMRuNj7hX1+27J8XDdCoSLf0EjEyF69nacuWyiJYoQ/j39RT1mSnd2G"
+            crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div id="chat-app">
+            <h1>Chat App</h1>
+            <div hx-ext="ws" ws-connect="/chat"
+                hx-on:htmx:ws-after-message="document.querySelector('#form').reset()">
+                <form id="form" ws-send>
+                    <input type="text" id="message" name="message" placeholder="メッセージ" required>
+                    <input type="submit" value="送信" id="btn">
+                </form>
+            </div>
+            <div id="messages"></div>
+        </div>
+    </body>
+</html>

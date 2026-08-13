@@ -9,11 +9,11 @@
     "htmx-index": "bun --hot ./src/htmx-ws/index.tsx",
     "htmx-broadcast": "bun --hot ./src/htmx-ws/broadcast.tsx",
     "dev": "bun --hot ./src/vanilla-javascript/index.ts",
-    "test-vanilla-index": "bun --hot src/vanilla-javascript/index.ts & bun test ./tests/vanilla-javascript/index*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
-    "test-vanilla-broadcast": "bun --hot src/vanilla-javascript/broadcast.ts & bun test ./tests/vanilla-javascript/broadcast*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
-    "test-htmx-index": "bun --hot src/htmx-ws/index.ts & bun test ./tests/htmx-ws/index*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
-    "test-htmx-broadcast": "bun --hot src/htmx-ws/broadcast.ts & bun test ./tests/htmx-ws/broadcast*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
-    "e2e": "bun run test-vanilla-index; bun run test-vanilla-broadcast; bun run test-htmx-index; bun run test-htmx-broadcast"
+    "test-vanilla-index":     "bun --hot src/vanilla-javascript/index.ts &     bun test ./tests/index*.e2e.ts;     kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+    "test-vanilla-broadcast": "bun --hot src/vanilla-javascript/broadcast.ts & bun test ./tests/broadcast*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+    "test-htmx-ws-index":     "bun --hot src/htmx-ws/index.ts &                bun test ./tests/index*.e2e.ts;     kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+    "test-htmx-ws-broadcast": "bun --hot src/htmx-ws/broadcast.ts &            bun test ./tests/broadcast*.e2e.ts; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+    "e2e": "bun run test-vanilla-index; bun run test-vanilla-broadcast; bun run test-htmx-ws-index; bun run test-htmx-ws-broadcast"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

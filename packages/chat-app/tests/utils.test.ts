@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { getServerName } from '../../src/shared/utils'
+import { getServerName } from '../src/shared/utils'
 
 describe("utils", () => {
     test("getServerName", () => {

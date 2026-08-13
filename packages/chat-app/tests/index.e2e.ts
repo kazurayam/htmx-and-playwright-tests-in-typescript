@@ -1,10 +1,10 @@
-// tests/vanilla-javascript/broadcast.e2e.ts
+// tests/vanilla-javascript/index.e2e.ts
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import * as PW from '@playwright/test';
 import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
 
 const url = 'http://localhost:8000/';
-const serverName = 'vanilla-javascript/broadcast.ts';
+const serverName = 'htmx-ws/index.ts';
 
 describe(`test the chat page`, async () => {
     // Here I assume that the server at http://localhost:8000 is already up and running.

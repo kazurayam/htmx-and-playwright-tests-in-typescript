@@ -4,7 +4,7 @@ import * as PW from '@playwright/test';
 import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
 
 const url = 'http://localhost:8000/';
-const serverName = 'vanilla-javascript/broadcast.ts';
+const serverName = 'htmx-ws/broadcast.ts';
 
 describe(`test Chat page using 2 browsers`, async () => {
     // Here I assume that the server at http://localhost:8000 is already up and running.

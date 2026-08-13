@@ -1,5 +1,6 @@
 // chat-app/src/htmx-ws/broadcast.ts
 import { getServerName } from '../shared/utils';
+import type { ServerWebSocket } from 'bun';
 
 console.log("🤗 Hello via Bun! 🐰");
 const topic = 'the-group-chat';
@@ -23,7 +24,7 @@ const server = Bun.serve({
         return new Response("404!");
     },
     websocket: {
-        open(ws) {
+        open(ws: ServerWebSocket ) {
             console.log("👋 A new Websocket Connection");
             ws.send('<div hx-swap-oob="beforeend:#messages">' +
                 `<span>serverName: ${getServerName(import.meta.url)}</span>` +
@@ -32,7 +33,7 @@ const server = Bun.serve({
             ws.publish(topic,
                 '<div hx-swap-oob="beforeend:#messages">' +
                 `<span>🥳 A new friend is joining the Party</span>` +
-                "</div>");;
+                "</div>");
         }, // a socket is opened
         message(ws, data) {
             let d = JSON.parse(data.toString());
@@ -46,7 +47,7 @@ const server = Bun.serve({
                 "</div>"
             );
         }, // a message is received
-        close(ws, code, message) {
+        close(ws) {
             console.log("⏹️ A Websocket Connection is CLOSED");
             const msg = '<div hx-swap-oob="beforeend:#messages">' +
                 `<span>A Friend has left the chat</span>` +

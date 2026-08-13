@@ -1,10 +1,10 @@
 // tests/vanilla-javascript/broadcast.e2e.ts
+
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import * as PW from '@playwright/test';
 import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
 
 const url = 'http://localhost:8000/';
-const serverName = 'htmx-ws/broadcast.ts';
 
 describe(`test the chat page`, async () => {
     // Here I assume that the server at http://localhost:8000 is already up and running.
@@ -19,7 +19,8 @@ describe(`test the chat page`, async () => {
 
     test("make sure the correct serverName is shown", async () => {
         // Select the serverName
-        const span: PW.Locator = page.getByText(serverName, { exact: false });
+        console.log(`expecting SERVER_NAME to be ${process.env.SERVER_NAME}`)
+        const span: PW.Locator = page.getByText(process.env.SERVER_NAME, { exact: false });
         // make sure the button is clickable
         await span.waitFor({ state: 'visible', timeout: 5000 });
         await PW.expect(span).toBeVisible();

@@ -1661,7 +1661,7 @@ JavaScriptのimportとexportには歴史的経緯があって一筋縄でいか�
       "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app",
       "type": "module",
       "exports": {
-        "default": "./src/main.tsx"
+        "default": "./tests/BrowserDriverChromium.ts"
       },
 
 修正を反映させるため、ルートディレクトリに戻って 次のコマンドを実行した。
@@ -1698,6 +1698,58 @@ VSCodeのエディタで `todo.e2e.ts` を確認した。するとようやく�
 
 うまく行った。`todo.e2e.ts` がPlaywrightを介してChromiumブラウザを立ち上げて <http://localhost:3000> を開いた。ToDo Appのフォーム画面が開いた。入力フィールドに "筋トレする" というテキストが入力された。追加するボタンが押下されて、タスクが登録された。そしてブラウザが閉じてテストが終了した。これでよし。
 
-## 7. まとめ
+# 7. Chatアプリ
+
+htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの [chatアプリのPython言語による実装](https://github.com/tomo1227/htmx_book_app/blob/main/src/chat.py) をGitHubで公開している。それと同等のものをわたしはTypeScript言語で実装した。
+
+## 7.1 設計概要
+
+- WebSocketプロトコルを使って通信するクライアントとサーバを作る。
+
+- サーバーはTypeScript言語で書き、Bunの上で動かす。
+
+- Bunのサーバー・サイドのWebSocket APIは [publish-subscribeパターン](https://bun.com/docs/guides/websocket/pubsub) を提供する。これを利用して複数のクライアントの間でメッセージをやりとりすることができる。
+
+- クライアントはWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。人がブラウザで開いたチャット画面に"こんにちは”とメッセージを入力すれば、別のウインドウで開いたチャット画面にも"こんにちは"とメッセージが自動的に表示されるようにする。
+
+- クライアントを２通りの手法で実装する。一つはブラウザが提供するクライアント・サイドのWebSocket APIを自作のJavaScriptが直接callしてサーバと通信し、HTMLのDOMを更新して画面表示を制御するやり方。もう一つは [HtmxのWebSocket拡張]() を利用しWebSocketによるサーバとの通信とDOM操作を任せるというやり方。
+
+## 7.2
+
+`packages` ディレクトリにcdしたあと `bun init -y chat-app` とやった。 `packages/chat-app` ディレクトリが作られ、その中に `packages.json` や\`tsconfig.json\` などが作られた。
+
+    $ cd $ROOT/packages
+    $ bun init -y chat-app
+    $ cd todo-app
+    $ tree . -L 2
+    .
+    ├── CLAUDE.md
+    ├── index.ts
+    ├── node_modules
+    │   ├── @types
+    │   └── typescript -> ../../../node_modules/.bun/typescript@5.9.3/node_modules/typescript
+    ├── package.json
+    ├── README.md
+    └── tsconfig.json
+
+`packages/chat-app/static` ディレクトリを作った。その中に3つのコードを作った。
+
+- `packages/chat-app/static/htmx/ext/ws.js` --- [jsdeliverのhtmx-ext-ws](https://www.jsdelivr.com/package/npm/htmx.org) からダウンロードした。
+
+- `packages/chat-app/static/htmx/htmx.min.js` --- [jsdeliverのhtmx..org](https://www.jsdelivr.com/package/npm/htmx.org) からダウンロードした。
+
+- `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している [GitHubレポジトリ](https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css) からダウンロードした
+
+- `packages/chat-app/src/chat.tsx`
+
+- `packages/chat-app/src/layout.tsx`
+
+- `packages/chat-app/src/top.tsx`
+
+実はわたし、WebSocketのプログラミングを試みるのは今回が初めてだった。htmx本の SECTION-025 "チャットアプリの作成" を読んだがそれだけでは動くものを作れなかった。別のテキストを読んでWebSocketを基礎から学習すべきだと覚悟した。わたしのWebSocket学習の記録を記事にしてQiitaに公開した。下記を参照のこと。
+
+- [Qiita / WebSocketプロトコルで連携するクライアントとサーバのデモ --- BunとHTMXによる](https://qiita.com/kazurayam/items/e0d6b30ba0a581dfe2fe)
+
+## 8. まとめ
 
 htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するのにbunに組み込まれたテストランナーを使った。Playwrightに関するドキュメントの多くは `npx playwright XXXX` というコマンドを使えと書いているが、あえてその方法をとらなかった。なぜなら `npx` コマンドはNode.jsの部品であり、bunでは使えないからだ。そこでPlaywrightのAPIを介してブラウザを起動・終了するためのライブラリ（`BrowserDriverChromium` クラスなど）を独自実装した。これによって `npx playwright` ではなく `bun test` でE2Eテストを実行できた。

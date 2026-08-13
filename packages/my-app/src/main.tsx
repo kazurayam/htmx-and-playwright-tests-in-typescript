@@ -3,7 +3,6 @@ import { Hono } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Top } from './top';
 import { Section3 } from './section3';
-import { BrowserDriverChromium } from '../tests/BrowserDriverChromium';
 
 const app = new Hono();
 app.use('*', serveStatic({ root: './static'}))
@@ -42,5 +41,3 @@ export default {
     port: 3001,
     fetch: app.fetch
 }
-
-export { BrowserDriverChromium } from '../tests/BrowserDriverChromium.ts';

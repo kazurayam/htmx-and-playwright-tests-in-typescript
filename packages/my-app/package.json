@@ -2,7 +2,7 @@
   "name": "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app",
   "type": "module",
   "exports": {
-    "default": "./src/main.tsx"
+    "default": "./tests/BrowserDriverChromium.ts"
   },
   "private": true,
   "scripts": {

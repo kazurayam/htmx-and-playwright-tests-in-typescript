@@ -1704,30 +1704,25 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
 
 ### 7.1 Chatプリ設計の概要
 
-- WebSocketプロトコルを使って通信するクライアントとサーバを作る。
+- WebSocketプロトコルで通信するクライアントとサーバを作る。
 
-- サーバーはTypeScript言語で書き、Bunの上で動かす。
-
-- Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用してChatサーバーを実現する。特にBunの [publish-subscribeパターンの実装](https://bun.com/docs/guides/websocket/pubsub) を活用する
+- サーバーはTypeScript言語で書き、Bunの上で動かす。Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用してChatサーバーを実現する。broadcastサービスを実現するのにBunの [publish-subscribeパターンの実装](https://bun.com/docs/guides/websocket/pubsub) を活用する
 
 - クライアントとしてWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。
 
-- Chatアプリの３通りの手法で実装する。
+- Chatアプリの３通りの手法で実装する。素朴な実装手法からより高度な手法へと段階的にコードを書き変える。
 
   1.  最初のChatアプリでは、クライアントをVanilla JavaScript(素朴なjavascript)で実装する。JavaScriptがクライアントWebSocket APIを直接呼び出してサーバーとWebSocketで通信し、Web画面のDOMを更新する。
 
-  2.  二番目のChatアプリでは [HtmxのWebSocket Exetension](https://htmx.org/extensions/ws/) を導入してサーバとクライアントのコードを大きく改める。
+  2.  二番目のChatアプリでは [HtmxのWebSocket Exetension](https://htmx.org/extensions/ws/) を導入する。サーバとクライアントのコードをかなり大きく書き変える。
 
-  3.  三番目のChatアプリでは、HonoとJSXを導入してコードを改める。
-      つまり素朴な実装手法から一歩高度な手法へと段階的に高度化していく。コードをどう改めるべきか、逐一説明する。
+  3.  三番目のChatアプリでは、HonoとJSXを導入する。コードをさらに書き変える。
 
-- 手法３通りの各々について、２通りのサーバを実装する。echoサーバとbroadcastサーバと。echoサーバーでは、人がブラウザで開いたチャット画面に「こんにちは」とメッセージを入力すれば、そのウインドウに「こんにちは」と反響が返るが、他のウインドウに「こんにちは」と表示されることはない。broadcastサーバでは、ブラウザのウインドウを２つ開いてチャット画面を開いた状態で、人が片方のウインドウで「こんにちは」と入力すれば、他方のウインドウにも「こんにちは」と表示される。３通りの手法 ✖️ ２種類の動作 = ６つのサーバを作る。
+- 手法３通りの各々について、２通りのサーバを実装する。echoサーバとbroadcastサーバと。echoサーバーでは、人がブラウザで開いたチャット画面に「こんにちは」とメッセージを入力すれば、そのウインドウに「こんにちは」と応答するが、他のウインドウに「こんにちは」と表示されることはない。broadcastサーバでは、ブラウザのウインドウを２つ開いてチャット画面を開いた状態で、人が片方のウインドウで「こんにちは」と入力すれば、他方のウインドウにも「こんにちは」と表示される。つまるところ３通りの手法 ✖️ ２種類の動作 = ６つのサーバを作る。６つのサーバが `localhost:8000` へのHTTPリクエストに対して応答するチャット画面はほとんど同じ見た目を持ち、ほとんど同じように動作する。
 
-- ６つのサーバが `localhost:8000` へのHTTPリクエストに対して応答するチャット画面はほとんど同じ見た目を持ち、ほとんど同じように動作する。
+- ６つのサーバそれぞれについてPlaywrightを使ったE2Eテストを作る。
 
-- Playwrightを使ったE2Eテストを作る。６つのサーバそれぞれについてChromeブラウザの操作を自動化する。
-
-### 7.2
+### 7.2 chat-appパッケージを作る
 
 `packages` ディレクトリにcdしたあと `bun init -y chat-app` とやった。 `packages/chat-app` ディレクトリが作られ、その中に `packages.json` や\`tsconfig.json\` などが作られた。
 
@@ -1753,15 +1748,243 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
 
 - `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している [GitHubレポジトリ](https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css) からダウンロードした
 
-- `packages/chat-app/src/chat.tsx`
+### 7.3 Vanilla JavaScriptとBun.serveでChatアプリを作る
 
-- `packages/chat-app/src/layout.tsx`
+#### vanilla-javascript/index.ts を実行する
 
-- `packages/chat-app/src/top.tsx`
+    $ cd $ROOT/packages/chat-app
+    $ bun ./src/vanilla-javascript/index.ts
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
 
-実はわたし、WebSocketのプログラミングを試みるのは今回が初めてだった。htmx本の SECTION-025 "チャットアプリの作成" を読んだがそれだけでは動くものを作れなかった。別のテキストを読んでWebSocketを基礎から学習すべきだと覚悟した。わたしのWebSocket学習の記録を記事にしてQiitaに公開した。下記を参照のこと。
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
 
-- [Qiita / WebSocketプロトコルで連携するクライアントとサーバのデモ --- BunとHTMXによる](https://qiita.com/kazurayam/items/e0d6b30ba0a581dfe2fe)
+    {
+        "scripts": {
+            "vanilla-index": "bun --hot ./src/vanilla-javascript/index.ts",
+            ...
+        }
+    }
+
+だから次のコマンドで同じサーバを起動することができる。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun run vanilla-index
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+#### echoするChat画面
+
+ブラウザを起動し `http://localhost:8000/` を開くとチャット画面が表示される。
+
+![071 chatpage onload](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/071-chatpage-onload.png)
+
+メッセージの入力フィールドに「こんにちは」と入力して送信ボタンを押すと、画面の下の方に「from you: こんにちは」と表示される。
+
+![072 chat echo](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/072-chat-echo.png)
+
+#### vanilla-javascript/broadcast.ts を実行する
+
+index.tsによって立ち上げたサーバを停止しよう。ターミナルでCTRL+Cを押せ。その代わりに vanilla-javascript/broadcast.ts を実行しよう。今度はbroadastするサーバが立ち上がる。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun ./src/vanilla-javascript/broadcast.ts
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+    {
+        "scripts": {
+            ...
+            "vanilla-broadcast": "bun --hot ./src/vanilla-javascript/broadcast.ts",
+            ...
+        }
+    }
+
+だから次のコマンドで同じサーバを起動することができる。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun run vanilla-broadcast
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+ブラウザのウインドウを２つ立ち上げ、両方とも <http://localhost:8000/> にnavigateしよう。そして左のウインドウで「こんにちは」とメッセージを入力しよう。すると左のウインドウに「こんにちは」と表示されるだけでなく、右のウインドウにも「こんにちは」と表示される。サーバが左のブラウザから受け取ったメッセージをを左右２つのクライアントに配信した。ブラウザをもっと増やしても同様に全てのブラウザに対して同じメッセージがbroadcastされるだろう。
+
+![073 chat broadcast](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/073-chat-broadcast.png)
+
+#### サーバがわで発生したイベントを契機とする同時配信
+
+`Hello from the Server, this is a periodic message!` というメッセージがサーバーからブラウザへ送信されて表示されることにも注意してほしい。WebSocketプロトコルではサーバーがわで発生した任意のイベントを契機としてメッセージを発信することができる。HTTPではこれができない。
+
+![074 chat server side event](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/074-chat-server-side-event.png)
+
+#### chat-app/src/vanilla-javascriptのソース
+
+    // chat-app/src/vanilla-javascript/index.ts
+    import { getServerName } from '../shared/utils';
+
+    console.log("🤗 Hello via Bun! 🐰");
+    const server = Bun.serve({
+        port: 8000,
+        routes: {
+            "/": new Response(Bun.file(new URL(import.meta.url + "/../index.html"))),
+            "/chat": (req, server) => {
+                if (server.upgrade(req)) {
+                    return; // do not return a Response
+                }
+                return new Response("Filed upgrading to WebSocket", { status: 400 });
+            },
+            "/styles/chat.css": (req, server) => {
+                const filePath = './static' + new URL(req.url).pathname;
+                return new Response(Bun.file(filePath));
+            }
+        },
+        fetch(req, server) {
+            return new Response("404!");
+        },
+        websocket: {
+            open(ws) {
+                console.log("👋 A new Websocket Connection is OPENED");
+                ws.send(`serverName: ${getServerName(import.meta.url)}`);
+                ws.send("👋 Welcome baby");
+            },
+            message(ws, message) {
+                console.log("✉️ A new Websocket Message is received: " + message);
+                ws.send("✉️ from you: " + message);
+            },
+            close(ws, code, message) {
+                console.log("⏹️ A Websocket Connection is CLOSED");
+            },
+            drain(ws) {
+                console.log("DRAIN EVENT");
+            }, // the socket is ready to receive more data
+        }
+    });
+    console.log(`🚀 Server (HTTP and WebSocket) is launched ${server.url.origin}`);
+
+    <!DOCTYPE html>
+    <html lang="ja">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Chat App</title>
+            <link rel="stylesheet" href="/styles/chat.css">
+            <link rel="icon" href="/favicon.ico">
+            <script>
+                let echo_service;
+                append = function (text) {
+                    document
+                    .getElementById('messages')
+                    .insertAdjacentHTML('beforeend',
+                        '<span class="message">' + text + '</span>');
+                };
+                window.onload = function () {
+                    echo_service = new WebSocket("ws://127.0.0.1:8000/chat");
+                    echo_service.onmessage = function (event) {
+                        append(event.data);
+                    };
+                    echo_service.onopen = function () {
+                        append("🚀 Connected to WebSocket!");
+                    };
+                    echo_service.onclose = function () {
+                        append("Connection closed");
+                    };
+                    echo_service.onerror = function () {
+                        append("Error happens");
+                    };
+                }
+
+                function sendMessage() {
+                    let message = document.getElementById('message').value;
+                    echo_service.send(message);
+                }
+            </script>
+        </head>
+        <body>
+            <div id="chat-app">
+                <h1>Chat App</h1>
+                <div>
+                    <input type="text" id="message" name="message" placeholder="メッセージ" required>
+                    <input type="button" value="送信" id="btn">
+                </div>
+                <div id="messages"></div>
+            </div>
+            <script>
+                let msg = document.querySelector('input#message');
+                let btn = document.querySelector('input#btn');
+                btn.addEventListener('click', function (event) {
+                    sendMessage(event);
+                    msg.value = '';
+                })
+            </script>
+        </body>
+    </html>
+
+    // chat-app/src/vanilla-javascript/broadcast.ts
+    import { getServerName } from '../shared/utils';
+
+    console.log("🤗 Hello via Bun! 🐰");
+    const topic = 'the-group-chat';
+    const server = Bun.serve({
+        port: 8000, // defaults to $BUN_PORT, $PORT, $NODE_PORT otherwise 3000
+        routes: {
+            "/": new Response(Bun.file(new URL(import.meta.url + "/../index.html"))),
+            "/surprise": new Response("🎁"),
+            "/chat": (req, server) => {
+                if (server.upgrade(req)) {
+                    return; // do not return a Response
+                }
+                return new Response("Filed upgrading to WebSocket", { status: 400 });
+            },
+            "/styles/chat.css": (req, server) => {
+                const filePath = './static' + new URL(req.url).pathname;
+                return new Response(Bun.file(filePath));
+            }
+        },
+        fetch(req, server) {
+            return new Response("404!");
+        },
+        websocket: {
+            message(ws, message) {
+                console.log("✉️ A new Websocket Message is received: " + message);
+                ws.send("✉️ from you:  " + message);
+                ws.publish(
+                    topic,
+                    `📢 from ${ws.remoteAddress}: ${message}`,
+                );
+            }, // a message is received
+            open(ws) {
+                console.log("👋 A new Websocket Connection");
+                ws.subscribe(topic);
+                ws.send(`serverName: ${getServerName(import.meta.url)}`);
+                ws.send("👋 Welcome baby");
+                ws.publish(topic, "🥳 A new friend is joining the Party");
+            }, // a socket is opened
+            close(ws, code, message) {
+                console.log("⏹️ A Websocket Connection is CLOSED");
+                const msg = `A Friend has left the chat`;
+                ws.unsubscribe(topic);
+                ws.publish(topic, msg);
+            }, // a socket is closed
+            drain(ws) {
+                console.log("DRAIN EVENT");
+            }, // the socket is ready to receive more data
+        },
+    });
+    console.log(`🚀 Server (HTTP and WebSocket) is launched ${server.url.origin}`);
+
+    setInterval(() => {
+        const msg = "Hello from the Server, this is a periodic message!";
+        server.publish(topic, msg);
+        //console.log(`Message sent to "${topic}": ${msg}`);
+    }, 10000); // 10000 ms = 10 seconds
+
+### 7.4 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
+
+### 7.5 HonoとJSXを導入してChatアプリを作り替える
+
+### 7.6 PlaywrightでE2Eテストをする
 
 ## 8. まとめ
 

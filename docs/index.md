@@ -1698,23 +1698,36 @@ VSCodeのエディタで `todo.e2e.ts` を確認した。するとようやく�
 
 うまく行った。`todo.e2e.ts` がPlaywrightを介してChromiumブラウザを立ち上げて <http://localhost:3000> を開いた。ToDo Appのフォーム画面が開いた。入力フィールドに "筋トレする" というテキストが入力された。追加するボタンが押下されて、タスクが登録された。そしてブラウザが閉じてテストが終了した。これでよし。
 
-# 7. Chatアプリ
+## 7. Chatアプリ
 
 htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの [chatアプリのPython言語による実装](https://github.com/tomo1227/htmx_book_app/blob/main/src/chat.py) をGitHubで公開している。それと同等のものをわたしはTypeScript言語で実装した。
 
-## 7.1 設計概要
+### 7.1 Chatプリ設計の概要
 
 - WebSocketプロトコルを使って通信するクライアントとサーバを作る。
 
 - サーバーはTypeScript言語で書き、Bunの上で動かす。
 
-- Bunのサーバー・サイドのWebSocket APIは [publish-subscribeパターン](https://bun.com/docs/guides/websocket/pubsub) を提供する。これを利用して複数のクライアントの間でメッセージをやりとりすることができる。
+- Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用してChatサーバーを実現する。特にBunの [publish-subscribeパターンの実装](https://bun.com/docs/guides/websocket/pubsub) を活用する
 
-- クライアントはWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。人がブラウザで開いたチャット画面に"こんにちは”とメッセージを入力すれば、別のウインドウで開いたチャット画面にも"こんにちは"とメッセージが自動的に表示されるようにする。
+- クライアントとしてWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。
 
-- クライアントを２通りの手法で実装する。一つはブラウザが提供するクライアント・サイドのWebSocket APIを自作のJavaScriptが直接callしてサーバと通信し、HTMLのDOMを更新して画面表示を制御するやり方。もう一つは [HtmxのWebSocket拡張]() を利用しWebSocketによるサーバとの通信とDOM操作を任せるというやり方。
+- Chatアプリの３通りの手法で実装する。
 
-## 7.2
+  1.  最初のChatアプリでは、クライアントをVanilla JavaScript(素朴なjavascript)で実装する。JavaScriptがクライアントWebSocket APIを直接呼び出してサーバーとWebSocketで通信し、Web画面のDOMを更新する。
+
+  2.  二番目のChatアプリでは [HtmxのWebSocket Exetension](https://htmx.org/extensions/ws/) を導入してサーバとクライアントのコードを大きく改める。
+
+  3.  三番目のChatアプリでは、HonoとJSXを導入してコードを改める。
+      つまり素朴な実装手法から一歩高度な手法へと段階的に高度化していく。コードをどう改めるべきか、逐一説明する。
+
+- 手法３通りの各々について、２通りのサーバを実装する。echoサーバとbroadcastサーバと。echoサーバーでは、人がブラウザで開いたチャット画面に「こんにちは」とメッセージを入力すれば、そのウインドウに「こんにちは」と反響が返るが、他のウインドウに「こんにちは」と表示されることはない。broadcastサーバでは、ブラウザのウインドウを２つ開いてチャット画面を開いた状態で、人が片方のウインドウで「こんにちは」と入力すれば、他方のウインドウにも「こんにちは」と表示される。３通りの手法 ✖️ ２種類の動作 = ６つのサーバを作る。
+
+- ６つのサーバが `localhost:8000` へのHTTPリクエストに対して応答するチャット画面はほとんど同じ見た目を持ち、ほとんど同じように動作する。
+
+- Playwrightを使ったE2Eテストを作る。６つのサーバそれぞれについてChromeブラウザの操作を自動化する。
+
+### 7.2
 
 `packages` ディレクトリにcdしたあと `bun init -y chat-app` とやった。 `packages/chat-app` ディレクトリが作られ、その中に `packages.json` や\`tsconfig.json\` などが作られた。
 

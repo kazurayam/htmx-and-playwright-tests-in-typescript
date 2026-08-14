@@ -7,7 +7,7 @@
 :projectVersion: 0.2.1
 :publishDate: 2026-07-13
 
-== Htmx and Playwright Tests in TypeScript
+= Htmx and Playwright Tests in TypeScript
 
 - project version: {projectVersion}
 - published at date: {publishDate}
@@ -15,7 +15,7 @@
 
 書籍 link:https://www.c-r.com/book/detail/1595[「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所] （以下で "htmx本" と略する）のサンプルコードを読んで link:https://htmx.org/[htmx] を活用したwebアプリケーションを開発する手法を学ぼうと思った。htmxそのものについての解説はhtmx本に譲る。webアプリケーションをTypeScriptで構築することと、Playwrightでend-to-endテストを実装することについて、わたしなりの工夫をした。どうやったか忘備録として以下に記述する。
 
-=== 1 達成目標と課題
+== 1 達成目標と課題
 
 わたしは次のようなことを達成したい。
 
@@ -26,9 +26,9 @@
 
 ひとつ課題がある。わたしはPlaywrightをbunの上で利用したい。ところがbunの上でPlaywrightを動かす事例紹介がネット上にほとんど見当たらない。Playwrightの公式ドキュメント link:https://playwright.dev/docs/intro[Getting started/Installation] を見れば明らかだが、Playwrightがそもそも link:https://nodejs.org/[Node.js] を前提に開発されたからだろう、テストを実行するのに `npx playwright` というコマンドを使えと書いている記事ばかりだ。ところがbunに `npx` は無い。初手から詰まってしまった。どうすればいいのか？わたしは自力で答えを見つけなければならない。
 
-=== 2 基盤を準備する
+== 2 基盤を準備する
 
-==== 2.1 実行環境
+=== 2.1 実行環境
 
 - Apple MacBook Air, M1
 - macOS 26.5.1
@@ -36,7 +36,7 @@
 - node v24.9.0, npm 11.7.0, npx 11.7.0 がインストール済み
 - Visual Studio Code 1.125.1
 
-==== 2.2 bunをインストールする
+=== 2.2 bunをインストールする
 
 - 参考情報: link:https://bun.com/docs/installation[bun公式 Installation]
 - 参考情報: link:https://t-cr.jp/article/c5h1j98oknorvak[Bun コマンド チートシート：bun install／run／x／test／build 一括早見表]
@@ -47,7 +47,7 @@ bunをインストールするには公式サイトの指示に従ってコマ�
 $ curl -fsSL https://bun.com/install | bash
 ```
 
-==== 2.3 Gitレポジトリのルートとなるディレクトリを作る
+=== 2.3 Gitレポジトリのルートとなるディレクトリを作る
 
 任意の場所でディレクトリを作る。
 
@@ -69,7 +69,7 @@ $ cd $ROOT
 $ mkdir packages
 ```
 
-==== 2.4 webアプリケーション `my-app` の雛形を作る
+=== 2.4 webアプリケーション `my-app` の雛形を作る
 
 - 参考情報: https://bun.com/docs/quickstart
 
@@ -172,9 +172,9 @@ image::{PAGES_URL}/images/001_index.ts.png[]
 
 簡素だがまともなHTTP応答が画面に表示されました。webサーバーを停止するにはコマンドラインで CTRL+C と入力します。
 
-=== 3 webアプリケーションの雛形を実装する
+== 3 webアプリケーションの雛形を実装する
 
-==== 3.1 Honoを導入する
+=== 3.1 Honoを導入する
 
 - 参考情報: https://hono.dev/docs/getting-started/bun
 
@@ -275,7 +275,7 @@ image::{PAGES_URL}/images/002_main.ts.png[]
 
 `main.ts` が応答した `Hello Bun!` という文字がたしかに画面に表示されています。
 
-==== 3.2 webアプリがlistenするIPポート番号を指定する
+=== 3.2 webアプリがlistenするIPポート番号を指定する
 
 - 参考情報: https://hono.dev/docs/getting-started/nodejs#change-port-number
 
@@ -303,7 +303,7 @@ image::{PAGES_URL}/images/003_main_3001.png[]
 
 ポート番号 3001 をlistenするwebアプリが立ち上がりました。
 
-==== 3.3 JSXを導入する
+=== 3.3 JSXを導入する
 
 - 参考情報: https://hono.dev/docs/guides/jsx
 
@@ -414,7 +414,7 @@ export const Layout: FC = (props) => {
 
 image::{PAGES_URL}/images/004_main_hono_jsx.png[004_main_hono_jsx]
 
-==== 3.4 静的なファイルを組み込む
+=== 3.4 静的なファイルを組み込む
 
 - 参考情報: https://hono.dev/docs/getting-started/nodejs#serve-static-files
 
@@ -474,7 +474,7 @@ webアプリケーションを止めて再起動します。`http://localhost:30
 
 image::{PAGES_URL}/images/006_main_css_applied.png[]
 
-==== 3.5 htmx構文を使ったwebページを作る
+=== 3.5 htmx構文を使ったwebページを作る
 
 htmx本の「Chapter02 htmxの基礎 / SECTION-003 Ajax通信」のサンプルコードを写経しよう。`src/section3.tsx` を追加します。
 
@@ -545,7 +545,7 @@ export default {
 
 image::{PAGES_URL}/images/007_section3_before_action.png[]
 
-==== 3.6 htmxでAjax通信する
+=== 3.6 htmxでAjax通信する
 
 `http://localhost:3001/section3` をブラウザで開くと「クリック」とラベル付けされたボタンがいくつか表示されている。その一つをクリックしましたが、表面的には何の変化も起きません。DevToolのコンソールを見ると 404 Not Found のエラーが記録されていました。
 
@@ -616,11 +616,11 @@ htmxが動いた！
 
 htmx本はhtmxのたくさんの機能を紹介するサンプルコードを紹介しています。htmx本を読みながら、上記で `src/section3.jsx` を作ったのと同じノリで `section4.tsx` を追加し `section5.tsx` を追加してという具合にwebアプリを拡張していくことができます。
 
-=== 4 テストの土台を作る
+== 4 テストの土台を作る
 
 Webアプリができたので、次にPlaywrightによるE2Eテストを作る作業に取り掛かります。まず土台を作ります。
 
-==== 4.1 `tests` ディレクトリを追加する
+=== 4.1 `tests` ディレクトリを追加する
 
 webアプリのコードを `src` ディレクトリに格納してきました。それとは別にテストコードを格納するために `tests` ディレクトリを作ります。
 
@@ -644,7 +644,7 @@ $ tree . -L 2
 └── tsconfig.json
 ```
 
-==== 4.2 テストコードがどこに格納されているかをbunに教える
+=== 4.2 テストコードがどこに格納されているかをbunに教える
 
 - 参考情報: link:https://bun.com/docs/test/configuration#root[Test configuration - Bun, Test Discovery]
 
@@ -657,7 +657,7 @@ $ tree . -L 2
 root = "tests"  # scan for tests only in the "tests" directory
 ----
 
-==== 4.3 Playwrightをプロジェクトに追加する
+=== 4.3 Playwrightをプロジェクトに追加する
 
 Playwrightのライブラリをプロジェクトに追加します。次のようにコマンドを投入する。
 
@@ -683,7 +683,7 @@ installed playwright-chromium@1.61.1 with binaries:
 
 Playwrightライブラリの中にはChromiumブラウザの本体が含まれている。わたしがダウンロードするとき5分ぐらい時間がかかった。これは初回だけ。次回以降は `~/.bun/cache` にダウンロードされたファイルが参照されるのでほとんど時間はかからない。
 
-==== 4.4 PlaywrightのAPIを介してブラウザを操作するテストを書く
+=== 4.4 PlaywrightのAPIを介してブラウザを操作するテストを書く
 
 Chromiumブラウザを起動し、Webサイト `http://example.com` を開いて、HTMLの中身を検証し、それが済んだらブラウザを閉じる、というテストを書きました。
 
@@ -712,7 +712,7 @@ import { test, expect } from '@playwright/test';
 
 これに反してわたしは `bun:test` からimportした `test` と `expect` を使って書きたかった。なぜならブラウザを介したE2Eテストではなくて TypeScriptの関数やclassをユニット・テストするときわたしは `bun:test` の `test` と `expect` を選ぶ。慣れ親しんだ日用品ですから手放したくない。E2Eテストも `bun test` コマンドで実行したい。
 
-==== 4.5 bun testコマンドでテストを実行する
+=== 4.5 bun testコマンドでテストを実行する
 
 ではテストを実行しよう。bunに組み込まれたテストランナーを使います。
 
@@ -737,7 +737,7 @@ Ran 1 test across 1 file. [3.21s]
 image::{PAGES_URL}/images/010_play-on-browser.png[]
 
 
-==== 4.6 ロギングフレームワーク LogTape を導入する
+=== 4.6 ロギングフレームワーク LogTape を導入する
 
 - 参考情報: link:https://qiita.com/hongminhee/items/fff0ce9c8ae50e70496b[Qiita「LogTape：JavaScript/TypeScript向けのシンプルで柔軟なロギングライブラリの紹介と使い方」]
 
@@ -819,7 +819,7 @@ console.log()によるメッセージが無くなってコンソールの表示�
 
 テストコードのみならずwebアプリ本体もロギングフレームワークを利用して、詳細なログ情報をファイルに出力することができる。`console.log(...)` に頼りすぎるとコンソールがごちゃごちゃになって作業しづらくなる。その問題を根本的に回避することができます。
 
-=== 5 htmxなwebページをPlaywrightでテストする
+== 5 htmxなwebページをPlaywrightでテストする
 
 さてPlaywrightによるテストを実装しましょう。
 
@@ -829,7 +829,7 @@ image::{PAGES_URL}/images/009_section3_responded.png[]
 
 ボタンをclickすると、それに反応してボタンのラベルが切り替わるかどうかをテストしよう。そのようなテストをPlaywrightのAPIを利用して書きたい。
 
-==== 5.2 E2Eテストを実行する
+=== 5.2 E2Eテストを実行する
 
 `http://localhost:3001/section3` にアクセスして、ボタンをクリックしたらボタンのラベルが切り替わるかどうかを検証するテストコード `tests/section3.e2e.ts` を書きました。ただし `tests/section3.e2e.ts` を実行する直前に、あらかじめ `http://localhost:3001` の webアプリを起動しておく必要があります。また、 `bun test` が終了したらwebアプリを停止したい。こうした操作をコマンドラインで繰り返したらタイピングが大変です。 `package.json` の `scripts` に `testmain` サブコマンドを追加しました。
 
@@ -866,7 +866,7 @@ tests/section3.e2e.ts:
 Ran 5 tests across 1 file. [3.78s]
 ```
 
-==== 5.2 E2Eテスト `tests/section3.e2e.ts`
+=== 5.2 E2Eテスト `tests/section3.e2e.ts`
 
 ブラウザに `http://localhost:3001/section3` を表示した状態でボタンをクリックしサーバからの応答を画面に反映するまでの一連の動作をテストするコードを書きました。
 
@@ -877,7 +877,7 @@ include::{MYAPP}/tests/section3.e2e.ts[]
 
 このコードについていくつか注釈を加えます
 
-===== 5.2.1 bun の `test` と `expect` を使う
+==== 5.2.1 bun の `test` と `expect` を使う
 
 ```
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
@@ -891,7 +891,7 @@ describe(`test ${url}`, async () => {
 
 `bun:test` からimportされてた `describe` と `test` を使っていることに注意してほしい。link:https://playwright.dev/docs/writing-tests#using-test-hooks[Playwright API] にも名前のよく似た `describe` と `test` があるのだが全く別のものです。
 
-===== 5.2.2 Playwrightのexpectも使う
+==== 5.2.2 Playwrightのexpectも使う
 
 `import * as PW from '@playwright/test'` という宣言によりPlaywrightのAPIを `PW` という固有の名前空間で分けて表記し参照可能にしています。`PW.Page` はPlaywrightのPageクラスです。
 
@@ -903,7 +903,7 @@ describe(`test ${url}`, async () => {
 
 ここで `PW.expect` という名前で呼び出しているのはPlaywrightの `expect` である。 `from bun:test` によってimportされた `expect` ではありません。名前空間 PW を導入することにより bun:testのexpectとPlaywrightのexpectと、どちらも利用可能になりました。
 
-===== 5.2.3 Playwrightのpageとlocatorとexpect
+==== 5.2.3 Playwrightのpageとlocatorとexpect
 
 Playwrightの `page` オブジェクトと `locator` オブジェクトを使ってさまざまのactionを実行したり、DOM要素の状態を調べたりEventを捕捉したりすることができる。たくさん学習しなければならないが、ここでは述べない。詳細な解説をネット上でたくさん見つけることができる。たとえばPlaywrightの公式ドキュメント
 
@@ -911,7 +911,7 @@ Playwrightの `page` オブジェクトと `locator` オブジェクトを使っ
 
 を参照のこと。
 
-==== 5.3 ヘルパ `BrowserDriverChromium.ts` と `browser-helpers.ts`
+=== 5.3 ヘルパ `BrowserDriverChromium.ts` と `browser-helpers.ts`
 
 `section3.e2e.ts` は `BrowserDriverChromium` クラスをimportしている。
 
@@ -931,13 +931,13 @@ include::{MYAPP}/tests/browser-helpers.ts[]
 
 `browser-helpers` の関数は 各種のパラメータやオブションに具体的な値を指定しつつPlaywright API を直に呼び出す役を果たします。たとえばChromiumブラウザのウインドウをheadless（不可視）にするかどうかの指定や、ウインドウの縦横のサイズを指定することができる。詳細については Playwright APIの link:https://playwright.dev/docs/api/class-browser[Browser] クラスと link:https://playwright.dev/docs/api/class-browserType[BrowserType] クラスのAPI Referenceドキュメントを参照していただきたい。
 
-=== 6. ToDoアプリ
+== 6. ToDoアプリ
 
 htmx本のCHAPTER07「サンプルアプリの作成」にToDoアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの link:https://github.com/tomo1227/htmx_book_app/blob/main/src/todo.py[Python言語による実装] をGitHubで公開している。それと同等のものをわたしはTypeScriptでbunとHonoを基盤として実装し、Playwrightによるテストも実装した。その成果物を以下で紹介する。
 
 なおhtmx本の CHAPTER01 から CHAPTER06 までの内容に対応するコードを `packages/my-app` というサブディレクトリに格納した。それに加えて CHAPTER07 のToDoアプリのコードを `packages/todo-app` という別個のサブディレクトリに格納した。つまりひとつのGitレポジトリの中に複数のパッケージを収めた。いわゆる「monorepo」である。モノレポの作り方も説明する。
 
-==== 6.1 ToDoアプリをTypeScriptで実装する
+=== 6.1 ToDoアプリをTypeScriptで実装する
 
 `packages` ディレクトリにcdしたあと `bun init todo-app` とやって `packages/todo-app` ディレクトリを作り、初期設定されたファイル一式を作った。
 
@@ -1072,7 +1072,7 @@ image:{PAGES_URL}/images/011_todo-app.png[]
 
 以上でToDoアプリを実装することができた。
 
-==== 6.2 モノレポにする
+=== 6.2 モノレポにする
 
 - 参考情報: link:https://bun.com/docs/guides/install/workspaces[bun Docs / Workspaces with Bun]
 
@@ -1119,7 +1119,7 @@ $ tree -L 3 .
 
 `packages` ディレクトリの下に `my-app` パッケージと `todo-app` パッケージがある。それぞれのWebアプリはどちらもHonoを基盤としてJSXとhtmxを利用したアプリであって独立している。`todo-app` のWebアプリのコードが `my-app` のWebアプリのコードに依存してはいない。ただし詳しくは後で述べるが `todo-app` のテストコードが `my-app` の `tests` の中にある `BrowserDriverChromium` class を参照するようにしたい。だから `todo-app` が `my-app` を参照できるようにbunの設定を作る必要がある。
 
-===== 6.2.1 workspacesの定義
+==== 6.2.1 workspacesの定義
 
 Gitレポジトリのルート・ディレクトリの直下にある `package.json` を次のように書きます。
 
@@ -1141,7 +1141,7 @@ include::../package.json[]
 
 `workspaces` プロパティがこのように記述されているので `packages` ディレクトリの下にある `my-app` ディレクトリと `todo-app` ディレクトリがどちらも link:https://bun.com/docs/pm/workspaces[workspace] として認められることになります。
 
-===== 6.2.2 パッケージの nameプロパティ を整える
+==== 6.2.2 パッケージの nameプロパティ を整える
 
 - 参考情報: link:https://docs.npmjs.com/cli/v11/configuring-npm/package-json#name[npm Docs / package.json]
 
@@ -1195,7 +1195,7 @@ $ bun install
 
 ちなみにわたしが `bun install` コマンドを実行した後でVSCodeの画面で `node_modules` ディレクトリの中身を目視しようとしたが、変化が見られなくて「あれ？」と驚くことがあった。VSCodeをいったんクローズして再起動したら `node_modules` の中身が変わっているのが見えた。つまりVSCodeに画面をリフレッシュするチャンスを与えなければならない。VSCodeを上手に設定すれば回避できそうだが、それは別の話題。
 
-==== 6.3 ToDoアプリのためにPlaywrightのテストを書いた
+=== 6.3 ToDoアプリのためにPlaywrightのテストを書いた
 
 `$TODO/tests/todo.e2e.ts` を実装した。
 
@@ -1212,7 +1212,7 @@ import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-t
 
 つまり `todo.e2e.ts` はパッケージ `@kazurayam/htmx-and-playwright-tests-in-typescript-my-app` が持っていてexportしているはずの `BrowserDriverChromium` をimportして使いたい、と書いてある。
 
-==== 6.4 todo-appがmy-appのBrowserDriverChromiumを参照できない!
+=== 6.4 todo-appがmy-appのBrowserDriverChromiumを参照できない!
 
 ところがわたしが `todo.e2e.ts` を書いた時、VSCodeのエディタは下記のように下波線を表示して警告した。
 
@@ -1314,7 +1314,7 @@ $ bun install
 
 VSCodeのエディタで `todo.e2e.ts` を確認した。するとようやく下波線が消えた。これでいけるはず。
 
-==== 6.5 todo-appでテストを実行
+=== 6.5 todo-appでテストを実行
 
 `packages/todo-app/packages.json` を修正してテストを実行するコマンドを追加した。
 
@@ -1350,15 +1350,19 @@ Ran 1 test across 1 file. [5.16s]
 
 htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの link:https://github.com/tomo1227/htmx_book_app/blob/main/src/chat.py[chatアプリのPython言語による実装] をGitHubで公開している。それと同等のものをわたしはTypeScript言語で実装した。
 
-=== 7.1 設計概要
+=== 7.1 Chatプリ設計の概要
 
-- WebSocketプロトコルを使って通信するクライアントとサーバを作る。
-- サーバーはTypeScript言語で書き、Bunの上で動かす。
-- Bunのサーバー・サイドのWebSocket APIは link:https://bun.com/docs/guides/websocket/pubsub[publish-subscribeパターン] を提供する。これを利用して複数のクライアントの間でメッセージをやりとりすることができる。
-- クライアントはWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。人がブラウザで開いたチャット画面に"こんにちは”とメッセージを入力すれば、別のウインドウで開いたチャット画面にも"こんにちは"とメッセージが自動的に表示されるようにする。
-- クライアントを２通りの手法で実装する。一つはブラウザが提供するクライアント・サイドのWebSocket APIを自作のJavaScriptが直接callしてサーバと通信し、HTMLのDOMを更新して画面表示を制御するやり方。もう一つは link:[HtmxのWebSocket拡張] を利用しWebSocketによるサーバとの通信とDOM操作を任せるというやり方。
+- WebSocketプロトコルで通信するクライアントとサーバを作る。
+- サーバーはTypeScript言語で書き、Bunの上で動かす。Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用してChatサーバーを実現する。broadcastサービスを実現するのにBunの link:https://bun.com/docs/guides/websocket/pubsub[publish-subscribeパターンの実装] を活用する
+- クライアントとしてWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。
+- Chatアプリの３通りの手法で実装する。素朴な実装手法からより高度な手法へと段階的にコードを書き変える。
+  1. 最初のChatアプリでは、クライアントをVanilla JavaScript(素朴なjavascript)で実装する。JavaScriptがクライアントWebSocket APIを直接呼び出してサーバーとWebSocketで通信し、Web画面のDOMを更新する。
+  2. 二番目のChatアプリでは link:https://htmx.org/extensions/ws/[HtmxのWebSocket Exetension] を導入する。サーバとクライアントのコードをかなり大きく書き変える。
+  3. 三番目のChatアプリでは、HonoとJSXを導入する。コードをさらに書き変える。
+- 手法３通りの各々について、２通りのサーバを実装する。echoサーバとbroadcastサーバと。echoサーバーでは、人がブラウザで開いたチャット画面に「こんにちは」とメッセージを入力すれば、そのウインドウに「こんにちは」と応答するが、他のウインドウに「こんにちは」と表示されることはない。broadcastサーバでは、ブラウザのウインドウを２つ開いてチャット画面を開いた状態で、人が片方のウインドウで「こんにちは」と入力すれば、他方のウインドウにも「こんにちは」と表示される。つまるところ３通りの手法 ✖️ ２種類の動作 = ６つのサーバを作る。６つのサーバが `localhost:8000` へのHTTPリクエストに対して応答するチャット画面はほとんど同じ見た目を持ち、ほとんど同じように動作する。
+- ６つのサーバそれぞれについてPlaywrightを使ったE2Eテストを作る。
 
-=== 7.2
+=== 7.2 chat-appパッケージを作る
 
 `packages` ディレクトリにcdしたあと `bun init -y chat-app` とやった。 `packages/chat-app` ディレクトリが作られ、その中に `packages.json` や`tsconfig.json` などが作られた。
 
@@ -1379,27 +1383,125 @@ $ tree . -L 2
 └── tsconfig.json
 ----
 
-
-
 `packages/chat-app/static` ディレクトリを作った。その中に3つのコードを作った。
 
 - `packages/chat-app/static/htmx/ext/ws.js` --- link:https://www.jsdelivr.com/package/npm/htmx.org[jsdeliverのhtmx-ext-ws] からダウンロードした。
 - `packages/chat-app/static/htmx/htmx.min.js` --- link:https://www.jsdelivr.com/package/npm/htmx.org[jsdeliverのhtmx..org] からダウンロードした。
 - `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している link:https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css[GitHubレポジトリ] からダウンロードした
 
+=== 7.3 Vanilla JavaScriptとBun.serveでChatアプリを作る
 
-- `packages/chat-app/src/chat.tsx`
-- `packages/chat-app/src/layout.tsx`
-- `packages/chat-app/src/top.tsx`
+==== vanilla-javascript/index.ts を実行する
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun ./src/vanilla-javascript/index.ts
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+[source,json]
+----
+{
+    "scripts": {
+        "vanilla-index": "bun --hot ./src/vanilla-javascript/index.ts",
+        ...
+    }
+}
+----
+
+だから次のコマンドで同じサーバを起動することができる。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun run vanilla-index
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+==== echoするChat画面
+
+ブラウザを起動し `http://localhost:8000/` を開くとチャット画面が表示される。
+
+image:{PAGES_URL}/images/071-chatpage-onload.png[]
+
+メッセージの入力フィールドに「こんにちは」と入力して送信ボタンを押すと、画面の下の方に「from you: こんにちは」と表示される。
+
+image:{PAGES_URL}/images/072-chat-echo.png[]
+
+==== vanilla-javascript/broadcast.ts を実行する
+
+index.tsによって立ち上げたサーバを停止しよう。ターミナルでCTRL+Cを押せ。その代わりに vanilla-javascript/broadcast.ts を実行しよう。今度はbroadastするサーバが立ち上がる。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun ./src/vanilla-javascript/broadcast.ts
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+[source,json]
+----
+{
+    "scripts": {
+        ...
+        "vanilla-broadcast": "bun --hot ./src/vanilla-javascript/broadcast.ts",
+        ...
+    }
+}
+----
+
+だから次のコマンドで同じサーバを起動することができる。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun run vanilla-broadcast
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+ブラウザのウインドウを２つ立ち上げ、両方とも http://localhost:8000/ にnavigateしよう。そして左のウインドウで「こんにちは」とメッセージを入力しよう。すると左のウインドウに「こんにちは」と表示されるだけでなく、右のウインドウにも「こんにちは」と表示される。サーバが左のブラウザから受け取ったメッセージをを左右２つのクライアントに配信した。ブラウザをもっと増やしても同様に全てのブラウザに対して同じメッセージがbroadcastされるだろう。
+
+image:{PAGES_URL}/images/073-chat-broadcast.png[]
+
+==== サーバがわで発生したイベントを契機とする同時配信
+
+`Hello from the Server, this is a periodic message!` というメッセージがサーバーからブラウザへ送信されて表示されることにも注意してほしい。WebSocketプロトコルではサーバーがわで発生した任意のイベントを契機としてメッセージを発信することができる。HTTPではこれができない。
+
+image:{PAGES_URL}/images/074-chat-server-side-event.png[]
+
+==== chat-app/src/vanilla-javascriptのソース
+
+[source,typescript]
+----
+include::../packages/chat-app/src/vanilla-javascript/index.ts[]
+----
+
+[source,html]
+----
+include::../packages/chat-app/src/vanilla-javascript/index.html[]
+----
+
+[source,typescript]
+----
+include::../packages/chat-app/src/vanilla-javascript/broadcast.ts[]
+----
+
+=== 7.4 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
+
+=== 7.5 HonoとJSXを導入してChatアプリを作り替える
+
+=== 7.6 PlaywrightでE2Eテストをする
 
 
-
-
-実はわたし、WebSocketのプログラミングを試みるのは今回が初めてだった。htmx本の SECTION-025 "チャットアプリの作成" を読んだがそれだけでは動くものを作れなかった。別のテキストを読んでWebSocketを基礎から学習すべきだと覚悟した。わたしのWebSocket学習の記録を記事にしてQiitaに公開した。下記を参照のこと。
-
-- link:https://qiita.com/kazurayam/items/e0d6b30ba0a581dfe2fe[Qiita / WebSocketプロトコルで連携するクライアントとサーバのデモ --- BunとHTMXによる]
-
-
-=== 8. まとめ
+== 8. まとめ
 
 htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するのにbunに組み込まれたテストランナーを使った。Playwrightに関するドキュメントの多くは `npx playwright XXXX` というコマンドを使えと書いているが、あえてその方法をとらなかった。なぜなら `npx` コマンドはNode.jsの部品であり、bunでは使えないからだ。そこでPlaywrightのAPIを介してブラウザを起動・終了するためのライブラリ（`BrowserDriverChromium` クラスなど）を独自実装した。これによって `npx playwright` ではなく `bun test` でE2Eテストを実行できた。

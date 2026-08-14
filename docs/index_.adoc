@@ -1,5 +1,5 @@
 :projectVersion: 0.0.1
-:REPOS_URL: https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript
+:REPOS_URL: https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop
 :PAGES_URL: https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript
 :ROOT: ../
 :MYAPP: ../packages/my-app
@@ -1397,7 +1397,7 @@ $ tree . -L 2
 - `packages/chat-app/static/htmx/htmx.min.js` --- link:https://www.jsdelivr.com/package/npm/htmx.org[jsdeliverのhtmx..org] からダウンロードした。
 - `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している link:https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css[GitHubレポジトリ] からダウンロードした
 
-=== 7.4 src/vanilla-javascript/*.ts : Vanilla JavaScriptとBun.serveでChatアプリを作る
+=== 7.4 Vanilla JavaScriptとBun.serveでChatアプリを作る
 
 ==== 7.4.1 Echoサーバを起動する
 
@@ -1489,15 +1489,21 @@ image:{PAGES_URL}/images/074-chat-server-side-event.png[]
 
 ==== 7.4.4 chat-app/src/vanilla-javascriptのソース
 
+===== link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.ts[chat-app/src/vanilla-javascript/index.ts]
+
 [source,typescript]
 ----
 include::../packages/chat-app/src/vanilla-javascript/index.ts[]
 ----
 
+===== link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.html[chat-app/src/vanilla-javascript/index.html]
+
 [source,html]
 ----
 include::../packages/chat-app/src/vanilla-javascript/index.html[]
 ----
+
+===== link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/broadcast.ts[chat-app/src/vanilla-javascript/broadcast.ts]
 
 [source,typescript]
 ----
@@ -1505,7 +1511,7 @@ include::../packages/chat-app/src/vanilla-javascript/broadcast.ts[]
 ----
 
 
-=== 7.5 src/htmx-ws/*.ts : HtmxのWebSocket Extensionを導入してChatアプリを作り替える
+=== 7.5 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
 
 ==== 7.5.1 Echoサーバを起動する
 
@@ -1595,15 +1601,21 @@ $ bun run htmx-broadcast
 
 ==== 7.5.4 chat-app/src/htmx-wsのソース
 
+===== link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.ts[chat-app/src/htmx-ws/index.ts]
+
 [source,typescript]
 ----
 include::../packages/chat-app/src/htmx-ws/index.ts[]
 ----
 
+===== link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.html[chat-app/src/htmx-ws/index.html]
+
 [source,html]
 ----
 include::../packages/chat-app/src/htmx-ws/index.html[]
 ----
+
+===== link:{REPOS_URL}/packages/chat-app/src/htmx-ws/broadcast.ts[chat-app/src/htmx-ws/broadcast.ts]
 
 [source,typescript]
 ----
@@ -1614,7 +1626,7 @@ include::../packages/chat-app/src/htmx-ws/broadcast.ts[]
 
 TODO
 
-=== 7.6 src/hono-jsx/*.ts : HonoとJSXを導入してChatアプリを作り替える
+=== 7.6 HonoとJSXを導入してChatアプリを作り替える
 
 
 === 7.7 PlaywrightでE2Eテストをする

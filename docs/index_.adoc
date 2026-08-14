@@ -1362,7 +1362,15 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
 - 手法３通りの各々について、２通りのサーバを実装する。echoサーバとbroadcastサーバと。echoサーバーでは、人がブラウザで開いたチャット画面に「こんにちは」とメッセージを入力すれば、そのウインドウに「こんにちは」と応答するが、他のウインドウに「こんにちは」と表示されることはない。broadcastサーバでは、ブラウザのウインドウを２つ開いてチャット画面を開いた状態で、人が片方のウインドウで「こんにちは」と入力すれば、他方のウインドウにも「こんにちは」と表示される。つまるところ３通りの手法 ✖️ ２種類の動作 = ６つのサーバを作る。６つのサーバが `localhost:8000` へのHTTPリクエストに対して応答するチャット画面はほとんど同じ見た目を持ち、ほとんど同じように動作する。
 - ６つのサーバそれぞれについてPlaywrightを使ったE2Eテストを作る。
 
-=== 7.2 chat-appパッケージを作る
+=== 7.2 参考情報
+
+1. link:https://ja.wikipedia.org/wiki/WebSocket[WikipediaのWebSocketのページ]
+2. link:https://developer.mozilla.org/en-US/docs/Web/API/WebSocket[MDN WebSocket API]
+3. link:https://htmx.org/extensions/ws/[HtmxのWebSocket Extension]
+4. link:https://bun.com/reference/bun/serve[Bun API Reference / serve]
+5. link:https://developer.mozilla.org/en-US/docs/Web/API/WebSocket[MDN / WebSocket]
+
+=== 7.3 chat-appパッケージを作る
 
 `packages` ディレクトリにcdしたあと `bun init -y chat-app` とやった。 `packages/chat-app` ディレクトリが作られ、その中に `packages.json` や`tsconfig.json` などが作られた。
 
@@ -1389,9 +1397,9 @@ $ tree . -L 2
 - `packages/chat-app/static/htmx/htmx.min.js` --- link:https://www.jsdelivr.com/package/npm/htmx.org[jsdeliverのhtmx..org] からダウンロードした。
 - `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している link:https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css[GitHubレポジトリ] からダウンロードした
 
-=== 7.3 Vanilla JavaScriptとBun.serveでChatアプリを作る
+=== 7.4 src/vanilla-javascript/*.ts : Vanilla JavaScriptとBun.serveでChatアプリを作る
 
-==== vanilla-javascript/index.ts を実行する
+==== 7.4.1 Echoサーバを起動する
 
 [source,shell]
 ----
@@ -1423,7 +1431,9 @@ $ bun run vanilla-index
 🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
 ----
 
-==== echoするChat画面
+サーバを停止するにはターミナルでCTRL+Cを押せ。
+
+==== 7.4.2 Chat画面
 
 ブラウザを起動し `http://localhost:8000/` を開くとチャット画面が表示される。
 
@@ -1433,9 +1443,9 @@ image:{PAGES_URL}/images/071-chatpage-onload.png[]
 
 image:{PAGES_URL}/images/072-chat-echo.png[]
 
-==== vanilla-javascript/broadcast.ts を実行する
+==== 7.4.3 broadcastサーバを立ち上げる
 
-index.tsによって立ち上げたサーバを停止しよう。ターミナルでCTRL+Cを押せ。その代わりに vanilla-javascript/broadcast.ts を実行しよう。今度はbroadastするサーバが立ち上がる。
+vanilla-javascript/broadcast.ts を実行しよう。今度はbroadastするサーバが立ち上がる。
 
 [source,shell]
 ----
@@ -1472,13 +1482,12 @@ $ bun run vanilla-broadcast
 
 image:{PAGES_URL}/images/073-chat-broadcast.png[]
 
-==== サーバがわで発生したイベントを契機とする同時配信
-
+broadcast.tsのプロセスが立ち上がっている時、
 `Hello from the Server, this is a periodic message!` というメッセージがサーバーからブラウザへ送信されて表示されることにも注意してほしい。WebSocketプロトコルではサーバーがわで発生した任意のイベントを契機としてメッセージを発信することができる。HTTPではこれができない。
 
 image:{PAGES_URL}/images/074-chat-server-side-event.png[]
 
-==== chat-app/src/vanilla-javascriptのソース
+==== 7.4.4 chat-app/src/vanilla-javascriptのソース
 
 [source,typescript]
 ----
@@ -1495,11 +1504,120 @@ include::../packages/chat-app/src/vanilla-javascript/index.html[]
 include::../packages/chat-app/src/vanilla-javascript/broadcast.ts[]
 ----
 
-=== 7.4 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
 
-=== 7.5 HonoとJSXを導入してChatアプリを作り替える
+=== 7.5 src/htmx-ws/*.ts : HtmxのWebSocket Extensionを導入してChatアプリを作り替える
 
-=== 7.6 PlaywrightでE2Eテストをする
+==== 7.5.1 Echoサーバを起動する
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun ./src/htmx-ws/index.ts
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+[source,json]
+----
+{
+    "scripts": {
+        ...
+        "htmx-ws-index": "bun --hot ./src/htmx-ws/index.ts",
+        ...
+    }
+}
+----
+
+だから次のコマンドで同じサーバを起動することができる。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun run htmx-ws-index
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+サーバを停止するにはターミナルでCTRL+Cを押せ。
+
+==== 7.5.2 Chat画面
+
+ブラウザを起動し `http://localhost:8000/` を開くとチャット画面が表示される。
+
+image:{PAGES_URL}/images/071-chatpage-onload.png[]
+
+これは前述の 7.4.2 のvanilla-javascript/index.tsで立ち上げたサーバーが応答するチャット画面とほとんど同じだ。ただし２つの画面には違うところが一つある。vanilla-javascript/index.tsが立ち上げたサーバのチャット画面の中には `serverName: vanilla-javascript/index.ts` という行が表示されている。
+
+image:{PAGES_URL}/images/075-serverName-vanilla[]
+
+いっぽう、htmx-ws/index.tsが立ち上げたサーバーのチャット画面の中には `serverName: htmx-ws/index.ts` という行が表示されている。
+
+image:{PAGES_URL}/images/076-serverName-htmx[]
+
+この表示はわたしが意図的に仕組んだものです。６つの別々なTypeScriptファイルがあって、それを起動すると見た目がほとんど同じなチャット画面が表示される。いま見ているチャット画面がどのTypeScriptによって応答されたものなのか、わからなくなって困ってしまった。そこでTypeScriptのコードを細工して、TypeScriptファイルのファイル名の末尾の部分を取り出して `serverName: xxxxxx/xxxxxx.ts` というふうに表示することにした。serverNameの表示があるので作業が楽になりました。
+
+==== 7.5.3 broadcastサーバを立ち上げる
+
+htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次に `chat-app/src/htmx-ws/broadcast.ts`` を実行しよう。今度はbroadastするサーバが立ち上がる。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun ./src/htmx-ws/broadcast.ts
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+[source,json]
+----
+{
+    "scripts": {
+        ...
+        "htmx-broadcast": "bun --hot ./src/htmx-ws/broadcast.ts",
+        ...
+    }
+}
+----
+
+だから次のコマンドで同じサーバを起動することができる。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+$ bun run htmx-broadcast
+🤗 Hello via Bun! 🐰
+🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+----
+
+==== 7.5.4 chat-app/src/htmx-wsのソース
+
+[source,typescript]
+----
+include::../packages/chat-app/src/htmx-ws/index.ts[]
+----
+
+[source,html]
+----
+include::../packages/chat-app/src/htmx-ws/index.html[]
+----
+
+[source,typescript]
+----
+include::../packages/chat-app/src/htmx-ws/broadcast.ts[]
+----
+
+==== 7.5.5 Htmx WebSocket拡張を利用するために必要な設定
+
+TODO
+
+=== 7.6 src/hono-jsx/*.ts : HonoとJSXを導入してChatアプリを作り替える
+
+
+=== 7.7 PlaywrightでE2Eテストをする
 
 
 == 8. まとめ

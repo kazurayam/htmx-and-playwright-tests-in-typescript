@@ -7,7 +7,7 @@
 
 - published at date: 2026-07-13
 
-- GitHub Repository: <https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript>
+- GitHub Repository: <https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop>
 
 書籍 [「JavaScriptレスの動的UI開発 htmx入門」太田智暉 著、C＆R研究所](https://www.c-r.com/book/detail/1595) （以下で "htmx本" と略する）のサンプルコードを読んで [htmx](https://htmx.org/) を活用したwebアプリケーションを開発する手法を学ぼうと思った。htmxそのものについての解説はhtmx本に譲る。webアプリケーションをTypeScriptで構築することと、Playwrightでend-to-endテストを実装することについて、わたしなりの工夫をした。どうやったか忘備録として以下に記述する。
 
@@ -1496,7 +1496,7 @@ npm Docの name に関する説明はこう述べています。
 
 > If you plan to publish your package, the most important things in your package.json are the name and version fields as they will be required. The name and version together form an identifier that is assumed to be completely unique. Changes to the package should come along with changes to the version. If you don’t plan to publish your package, the name and version fields are optional.
 
-わたしはGitレポジトリ [htmx-and-playwright-tests-in-typescript](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript) の成果物をnpmにパブリッシュするつもりはない。だからnmpレポジトリ全体の中でuniqueな名前を与えなければならぬわけではない。しかしわたしは `todo-app` が `my-app` に依存する関係を記述したい。そのためには `todo-app` と `my-app` のパッケージ名を整った名前にしておくことが必須になる。だから二つのパッケージのnameをいっそのことnmp全体でもユニークな値にしておくのが得策だ。
+わたしはGitレポジトリ [htmx-and-playwright-tests-in-typescript](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop) の成果物をnpmにパブリッシュするつもりはない。だからnmpレポジトリ全体の中でuniqueな名前を与えなければならぬわけではない。しかしわたしは `todo-app` が `my-app` に依存する関係を記述したい。そのためには `todo-app` と `my-app` のパッケージ名を整った名前にしておくことが必須になる。だから二つのパッケージのnameをいっそのことnmp全体でもユニークな値にしておくのが得策だ。
 
 `$PROJECT/package.json` の name をこう書きました。
 
@@ -1760,7 +1760,7 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
 
 - `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している [GitHubレポジトリ](https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css) からダウンロードした
 
-### 7.4 src/vanilla-javascript/\*.ts : Vanilla JavaScriptとBun.serveでChatアプリを作る
+### 7.4 Vanilla JavaScriptとBun.serveでChatアプリを作る
 
 #### 7.4.1 Echoサーバを起動する
 
@@ -1834,6 +1834,10 @@ broadcast.tsのプロセスが立ち上がっている時、
 
 #### 7.4.4 chat-app/src/vanilla-javascriptのソース
 
+- [chat-app/src/vanilla-javascript/index.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/index.ts)
+
+<!-- -->
+
     // chat-app/src/vanilla-javascript/index.ts
     import { getServerName } from '../shared/utils';
 
@@ -1875,6 +1879,10 @@ broadcast.tsのプロセスが立ち上がっている時、
         }
     });
     console.log(`🚀 Server (HTTP and WebSocket) is launched ${server.url.origin}`);
+
+- [chat-app/src/vanilla-javascript/index.html](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/index.html)
+
+<!-- -->
 
     <!DOCTYPE html>
     <html lang="ja">
@@ -1933,6 +1941,10 @@ broadcast.tsのプロセスが立ち上がっている時、
             </script>
         </body>
     </html>
+
+- [chat-app/src/vanilla-javascript/broadcast.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/broadcast.ts)
+
+<!-- -->
 
     // chat-app/src/vanilla-javascript/broadcast.ts
     import { getServerName } from '../shared/utils';
@@ -1993,7 +2005,7 @@ broadcast.tsのプロセスが立ち上がっている時、
         //console.log(`Message sent to "${topic}": ${msg}`);
     }, 10000); // 10000 ms = 10 seconds
 
-### 7.5 src/htmx-ws/\*.ts : HtmxのWebSocket Extensionを導入してChatアプリを作り替える
+### 7.5 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
 
 #### 7.5.1 Echoサーバを起動する
 
@@ -2065,6 +2077,10 @@ htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次�
 
 #### 7.5.4 chat-app/src/htmx-wsのソース
 
+- [chat-app/src/htmx-ws/index.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/index.ts)
+
+<!-- -->
+
     // chat-app/src/htmx-ws/index.ts
     import { getServerName } from '../shared/utils';
 
@@ -2112,6 +2128,10 @@ htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次�
     });
     console.log(`🚀 Server (HTTP and WebSocket) is launched ${server.url.origin}`);
 
+- [chat-app/src/htmx-ws/index.html](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/index.html)
+
+<!-- -->
+
     <!DOCTYPE html>
     <html lang="ja">
         <head>
@@ -2141,6 +2161,10 @@ htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次�
             </div>
         </body>
     </html>
+
+- [chat-app/src/htmx-ws/broadcast.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/broadcast.ts)
+
+<!-- -->
 
     // chat-app/src/htmx-ws/broadcast.ts
     import { getServerName } from '../shared/utils';
@@ -2218,7 +2242,7 @@ htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次�
 
 TODO
 
-### 7.6 src/hono-jsx/\*.ts : HonoとJSXを導入してChatアプリを作り替える
+### 7.6 HonoとJSXを導入してChatアプリを作り替える
 
 ### 7.7 PlaywrightでE2Eテストをする
 

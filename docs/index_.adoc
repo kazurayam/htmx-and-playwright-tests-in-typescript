@@ -1489,21 +1489,21 @@ image:{PAGES_URL}/images/074-chat-server-side-event.png[]
 
 ==== 7.4.4 chat-app/src/vanilla-javascriptのソース
 
-===== link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.ts[chat-app/src/vanilla-javascript/index.ts]
+- link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.ts[chat-app/src/vanilla-javascript/index.ts]
 
 [source,typescript]
 ----
 include::../packages/chat-app/src/vanilla-javascript/index.ts[]
 ----
 
-===== link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.html[chat-app/src/vanilla-javascript/index.html]
+- link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.html[chat-app/src/vanilla-javascript/index.html]
 
 [source,html]
 ----
 include::../packages/chat-app/src/vanilla-javascript/index.html[]
 ----
 
-===== link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/broadcast.ts[chat-app/src/vanilla-javascript/broadcast.ts]
+- link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/broadcast.ts[chat-app/src/vanilla-javascript/broadcast.ts]
 
 [source,typescript]
 ----
@@ -1601,21 +1601,21 @@ $ bun run htmx-broadcast
 
 ==== 7.5.4 chat-app/src/htmx-wsのソース
 
-===== link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.ts[chat-app/src/htmx-ws/index.ts]
+- link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.ts[chat-app/src/htmx-ws/index.ts]
 
 [source,typescript]
 ----
 include::../packages/chat-app/src/htmx-ws/index.ts[]
 ----
 
-===== link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.html[chat-app/src/htmx-ws/index.html]
+- link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.html[chat-app/src/htmx-ws/index.html]
 
 [source,html]
 ----
 include::../packages/chat-app/src/htmx-ws/index.html[]
 ----
 
-===== link:{REPOS_URL}/packages/chat-app/src/htmx-ws/broadcast.ts[chat-app/src/htmx-ws/broadcast.ts]
+- link:{REPOS_URL}/packages/chat-app/src/htmx-ws/broadcast.ts[chat-app/src/htmx-ws/broadcast.ts]
 
 [source,typescript]
 ----

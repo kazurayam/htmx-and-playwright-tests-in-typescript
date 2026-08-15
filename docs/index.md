@@ -2005,6 +2005,10 @@ broadcast.tsのプロセスが立ち上がっている時、
         //console.log(`Message sent to "${topic}": ${msg}`);
     }, 10000); // 10000 ms = 10 seconds
 
+#### 7.4.5 必要な設定
+
+`chat-app/src/vanilla-javascript/index.ts` を動かすためにはどんなパッケージを追加する必要があるか？ `vanilla-javascript/index.ts` が `new Bun.serve()` を呼び出しているから bun をaddしなければならないのではないか？ --- いや、そうではない。 `bun ./src/vanilla-javascript/index.ts` というように `bun` の中で `index.ts` を実行するから `Bun.serve()` は実行環境の中に組み込まれて与えられる。だから `bun add xxxx` すべき外部パッケージはない。
+
 ### 7.5 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
 
 #### 7.5.1 Echoサーバを起動する
@@ -2018,8 +2022,7 @@ broadcast.tsのプロセスが立ち上がっている時、
 
     {
         "scripts": {
-            ...
-            "htmx-ws-index": "bun --hot ./src/htmx-ws/index.ts",
+            "htmx-index": "bun --hot ./src/htmx-ws/index.ts",
             ...
         }
     }
@@ -2027,7 +2030,7 @@ broadcast.tsのプロセスが立ち上がっている時、
 だから次のコマンドで同じサーバを起動することができる。
 
     $ cd $ROOT/packages/chat-app
-    $ bun run htmx-ws-index
+    $ bun run htmx-index
     🤗 Hello via Bun! 🐰
     🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
 
@@ -2039,19 +2042,13 @@ broadcast.tsのプロセスが立ち上がっている時、
 
 ![071 chatpage onload](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/071-chatpage-onload.png)
 
-これは前述の 7.4.2 のvanilla-javascript/index.tsで立ち上げたサーバーが応答するチャット画面とほとんど同じだ。ただし２つの画面には違うところが一つある。vanilla-javascript/index.tsが立ち上げたサーバのチャット画面の中には `serverName: vanilla-javascript/index.ts` という行が表示されている。
+メッセージの入力フィールドに「こんにちは」と入力して送信ボタンを押すと、画面の下の方に「from you: こんにちは」と表示される。
 
-![075 serverName vanilla](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/075-serverName-vanilla)
-
-いっぽう、htmx-ws/index.tsが立ち上げたサーバーのチャット画面の中には `serverName: htmx-ws/index.ts` という行が表示されている。
-
-![076 serverName htmx](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/076-serverName-htmx)
-
-この表示はわたしが意図的に仕組んだものです。６つの別々なTypeScriptファイルがあって、それを起動すると見た目がほとんど同じなチャット画面が表示される。いま見ているチャット画面がどのTypeScriptによって応答されたものなのか、わからなくなって困ってしまった。そこでTypeScriptのコードを細工して、TypeScriptファイルのファイル名の末尾の部分を取り出して `serverName: xxxxxx/xxxxxx.ts` というふうに表示することにした。serverNameの表示があるので作業が楽になりました。
+![072 chat echo](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/072-chat-echo.png)
 
 #### 7.5.3 broadcastサーバを立ち上げる
 
-htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次に `` chat-app/src/htmx-ws/broadcast.ts` `` を実行しよう。今度はbroadastするサーバが立ち上がる。
+`` htmx-ws/broadcast.ts` `` を実行しよう。今度はbroadastするサーバが立ち上がる。
 
     $ cd $ROOT/packages/chat-app
     $ bun ./src/htmx-ws/broadcast.ts
@@ -2071,9 +2068,11 @@ htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次�
 だから次のコマンドで同じサーバを起動することができる。
 
     $ cd $ROOT/packages/chat-app
-    $ bun run htmx-broadcast
+    $ bun run htmx-ws
     🤗 Hello via Bun! 🐰
     🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+`chat-app/src/htmx-ws/broadcast.ts` が起動したサーバは `chat-app/src/vanilla-javascript/broadcast.ts` が起動したサーバとほとんど同じ画面を応答し同じようにメッセージを配信する。ただし `serverName: htmx-ws/broadcast.ts` とユニークな表示をする。
 
 #### 7.5.4 chat-app/src/htmx-wsのソース
 
@@ -2238,11 +2237,284 @@ htmx-ws/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次�
         console.log(`Message sent to "${topic}": ${msg}`);
     }, 30_000); // 30000 ms = 30 seconds
 
-#### 7.5.5 Htmx WebSocket拡張を利用するために必要な設定
+#### 7.5.5 必要な設定
 
-TODO
+`chat-app/src/htmx-ws/index.ts` を動かすためにはどんなパッケージを追加する必要があるか？
+
+クライアントがHtmxとWebSocket Extensionを必要とする。しかしランタイムにCDNからロードする方式を採用した。だから `bun add xxxx` であらかじめ追加しておくべき外部パッケージはない。
 
 ### 7.6 HonoとJSXを導入してChatアプリを作り替える
+
+`src/vanilla-javascript/index.ts` と `src/htmx-ws/index.ts` はどちらも `index.html` ファイルを読み込んでHTML画面を応答している。この方式は単純で分かりやすい。プログラミングの教材としてのChat画面を実現するにはこれで足りる。しかしちょっとでも複雑さを増したHTMLを実現するには不十分だ。menuとnaviとbodyとfooterというふうにHTMLを部品に分割し、コンポーネントを組み合わせることでviewを組み立てる方式を実現したい。そのためには [JSX](https://hono.dev/docs/guides/jsx) が最適だ。`src/htmx-ws` のコードを土台とし、HonoとJSXを導入しよう。
+
+#### 7.6.1 Echoサーバを起動する
+
+    $ cd $ROOT/packages/chat-app
+    $ bun ./src/hono-jsx/index.ts
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+    {
+        "scripts": {
+            ...
+            "hono-index": "bun --hot ./src/hono-jsx/index.ts",
+            ...
+        }
+    }
+
+だから次のコマンドで同じサーバを起動することができる。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun run hono-index
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+サーバを停止するにはターミナルでCTRL+Cを押せ。
+
+#### 7.6.2 Chat画面
+
+ブラウザを起動し `http://localhost:8000/` を開くとチャット画面が表示される。
+
+これは前述の 7.4.2 の\`vanilla-javascript/index.ts\` が立ち上げたサーバーが応答するチャット画面とほとんど同じだ。ただし違うところが一つだけある。`hono-jsx/index.ts` が立ち上げたサーバーのチャット画面の中には `serverName: hono-jsx/index.ts` という行が表示されている。
+
+#### 7.6.3 broadcastサーバを立ち上げる
+
+hono-jsx/index.ts で立ち上げたサーバを CTRL+C で停止しよう。次に `chat-app/src/hono-jsx/broadcast.ts` を実行しよう。今度はbroadastするサーバが立ち上がる。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun ./src/hono-jsx/broadcast.ts
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+また `$ROOT/packages/chat-app/package.json` に下記のように書いた。
+
+    {
+        "scripts": {
+            ...
+            "hono-broadcast": "bun --hot ./src/hono-jsx/broadcast.ts",
+            ...
+        }
+    }
+
+だから次のコマンドで同じサーバを起動することができる。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun run hono-broadcast
+    🤗 Hello via Bun! 🐰
+    🚀 Server (HTTP and WebSocket) is launched http://localhost:8000
+
+#### 7.6.4 chat-app/src/hono-jsxのソース
+
+- [chat-app/src/hono-jsx/index.tsx](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/index.tsx)
+
+<!-- -->
+
+    // chat-app/src/hono-jsx/index.tsx
+
+    import { Hono } from 'hono';
+    import { upgradeWebSocket, websocket } from 'hono/bun';
+    import { WSContext, type WSMessageReceive } from 'hono/ws';
+    import type { ServerWebSocket } from 'bun';
+    import { serveStatic } from '@hono/node-server/serve-static';
+    import { ChatForm } from './chatform';
+    import { getServerName } from '../shared/utils';
+
+    console.log("🤗 Hello via Bun! 🐰");
+    const app = new Hono();
+    app.use('*', serveStatic({ root: './static' }));
+
+    app.get('/', (c) => {
+        const messages = ['Hello htmx WebSocket Extension with Hono and JSX'];
+        return c.render(<ChatForm messages={messages} />);
+    })
+
+    app.get(
+        '/chat',
+        upgradeWebSocket((c) => {
+            return {
+                onOpen: (_event, ws: WSContext) => {
+                    console.log("👋 A new Websocket Connection");
+                    ws.send('<div hx-swap-oob="beforeend:#messages">' +
+                            `<span>serverName: ${getServerName(import.meta.url)}</span>` +
+                            '<span>👋 Welcome baby</span>' + '</div>');
+                    const rawWs = ws.raw as ServerWebSocket;
+                }, // a socket is opened
+                onMessage(event: MessageEvent<WSMessageReceive>, ws: WSContext) {
+                    let d = JSON.parse(event.data.toString());
+                    console.log("✉️ A new Websocket Message is received: " + d.message);
+                    ws.send('<div hx-swap-oob="beforeend:#messages">' +
+                        `<span>from you: ${d.message}</span>` + '</div>');
+                }, // a message is received
+                onClose: (_event, ws: WSContext) => {
+                    console.log("⏹️ A Websocket Connection is CLOSED");
+                    const msg = '<div hx-swap-oob="beforeend:#messages">' +
+                        `<span>A Friend has left the chat</span>` +
+                        "</div>";
+                    const rawWs = ws.raw as ServerWebSocket;
+                },
+                onError: () => {
+                    console.error("Error");
+                }
+            }
+        })
+    )
+
+    export default {
+        port: 8000,
+        fetch: app.fetch,
+        websocket
+    }
+
+- [chat-app/src/hono-jsx/layout.tsx](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/hono-jsx/layout.tsx)
+
+<!-- -->
+
+    // chat-app/src/hono-jsx/layout.tsx
+
+    import type { FC } from 'hono/jsx'
+
+    export const Layout: FC = (props) => {
+        return (
+            <html lang="ja">
+                <head>
+                    <meta charset="UTF-8"></meta>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+                    <title>Chat App</title>
+                    <script src="/htmx/htmx.min.js" hx-preserve="true"></script>
+                    <script src="/htmx/ext/ws.min.js" hx-preserve="true"></script>
+                    <link rel="stylesheet" href="/styles/chat.css"></link>
+                    <link rel="icon" href="/favicon.ico"></link>
+                </head>
+                <body>
+                    {props.children}
+                </body>
+            </html>
+        )
+    }
+
+- [chat-app/src/hono-jsx/chatform.tsx](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/hono-jsx/chatform.tsx)
+
+<!-- -->
+
+    // chat-app/src/hono-jsx/chatform.tsx
+
+    import type { FC } from 'hono/jsx';
+    import { Layout } from "./layout";
+
+    export const ChatForm: FC<{ messages: string[] }> = (props: {
+        messages: string[]
+    }) => {
+        const reset = { 'hx-on:htmx:ws-after-message': "document.querySelector('form').reset()" }
+        return (
+            <Layout>
+                <div id="chat-app">
+                    <h1>Chat App</h1>
+                    <div hx-ext="ws" ws-connect="/chat" {...reset}>
+                        <form id="form" ws-send>
+                            <input type="text" id="message" name="message" placeholder="メッセージ" required></input>
+                            <input type="submit" value="送信" id="btn"></input>
+                        </form>
+                    </div>
+                    <div id="messages"></div>
+                </div>
+            </Layout>
+        );
+    }
+
+- [chat-app/src/hono-jsx/broadcast.tsx](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/hono-jsx/broadcast.tsx)
+
+<!-- -->
+
+    // chat-app/src/hono-jsx/broadcast.tsx
+
+    import { Hono } from 'hono';
+    import { upgradeWebSocket, websocket } from 'hono/bun';
+    import { WSContext, type WSMessageReceive } from 'hono/ws';
+    import type { ServerWebSocket } from 'bun';
+    import { serveStatic } from '@hono/node-server/serve-static';
+    import { ChatForm } from './chatform';
+    import { getServerName } from '../shared/utils';
+
+    const topic = 'the-group-chat';
+
+    console.log("🤗 Hello via Bun! 🐰");
+    const app = new Hono();
+    app.use('*', serveStatic({ root: './static' }));
+
+    app.get('/', (c) => {
+        const messages = ['Hello htmx WebSocket Extension with Hono and JSX'];
+        return c.render(<ChatForm messages={messages} />);
+    })
+
+    app.get(
+        '/chat',
+        upgradeWebSocket((c) => {
+            return {
+                onOpen: (_event, ws: WSContext) => {
+                    console.log("👋 A new Websocket Connection");
+                    ws.send('<div hx-swap-oob="beforeend:#messages">' +
+                            `<span>serverName: ${getServerName(import.meta.url)}</span>` +
+                            '<span>👋 Welcome baby</span>' + '</div>');
+                    const rawWs = ws.raw as ServerWebSocket;
+                    rawWs.subscribe(topic);
+                    rawWs.publish(topic,
+                        '<div hx-swap-oob="beforeend:#messages">' +
+                        `<span>🥳 A new friend is joining the Party</span>` +
+                        "</div>");
+                }, // a socket is opened
+                onMessage(event: MessageEvent<WSMessageReceive>, ws: WSContext) {
+                    let d = JSON.parse(event.data.toString());
+                    console.log("✉️ A new Websocket Message is received: " + d.message);
+                    ws.send('<div hx-swap-oob="beforeend:#messages">' +
+                        `<span>from you: ${d.message}</span>` + '</div>');
+                    const rawWs = ws.raw as ServerWebSocket;
+                    rawWs.publish(
+                        topic,
+                        '<div hx-swap-oob="beforeend:#messages">' +
+                        `<span>from ${rawWs.remoteAddress}: ${d.message}</span>` +
+                        "</div>"
+                    );
+                }, // a message is received
+                onClose: (_event, ws: WSContext) => {
+                    console.log("⏹️ A Websocket Connection is CLOSED");
+                    const msg = '<div hx-swap-oob="beforeend:#messages">' +
+                        `<span>A Friend has left the chat</span>` +
+                        "</div>";
+                    const rawWs = ws.raw as ServerWebSocket;
+                    rawWs.unsubscribe(topic);
+                    rawWs.publish(topic, msg);
+                },
+                onError: () => {
+                    console.error("Error");
+                }
+            }
+        })
+    )
+
+    export default {
+        port: 8000,
+        fetch: app.fetch,
+        websocket
+    }
+
+#### 7.6.5 Htmx WebSocket拡張を利用するために必要な設定
+
+Honoを導入する。
+
+    $ cd $ROOT/packages/chat-app
+    $ bun add hono
+    $ bun add @hono/node-server
+
+Honoが提供するJSXをアプリが利用できるように `tsconfig.json` に一行追加する。
+
+    {
+        "compilerOptions": {
+            ...
+            "jsx": "react-jsx",
+            "jsxImportSource": "hono/jsx",
+            ...
 
 ### 7.7 PlaywrightでE2Eテストをする
 

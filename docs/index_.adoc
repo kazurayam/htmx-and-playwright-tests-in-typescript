@@ -1761,6 +1761,99 @@ Honoが提供するJSXをアプリが利用できるように `tsconfig.json` �
 
 === 7.7 PlaywrightでE2Eテストをする
 
+chat-appパッケージは全部で6つのサーバを実装した。これらをPlaywrightを使ってテストしたい。
+
+1. link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/index.ts[`chat-app/src/vanilla-javascript/index.ts`]
+2. link:{REPOS_URL}/packages/chat-app/src/vanilla-javascript/broadcast.ts[`chat-app/src/vanilla-javascript/broadcast.ts`]
+3. link:{REPOS_URL}/packages/chat-app/src/htmx-ws/index.ts[`chat-app/src/htmx-ws/index.ts`]
+4. link:{REPOS_URL}/packages/chat-app/src/htmx-ws/broadcast.ts[`chat-app/src/htmx-ws/broadcast.ts`]
+5. link:{REPOS_URL}/packages/chat-app/src/hono-jsx/index.tsx[`chat-app/src/hono-jsx/index.tsx`]
+6. link:{REPOS_URL}/packages/chat-app/src/hono-jsx/broadcast.tsx[`chat-app/src/hono-jsx/broadcast.tsx`]
+
+サーバーのTypeScriptコードが６つあるが、それらは同じURL `http://localhost:8000` に対してほとんど同じHTMLを応答し、同じ動作をする。唯一、`serverName: xxxxxxxx` の表示内容が違っている。
+
+これらをテストするためにテストを書いた。TypeScriptコードとしては３つで、３つ１組のテストを６つのサーバそれぞれに適用する。
+
+link:{REPOS_URL}/packages/chat-app/tests[`packages/chat-app/tests`]
+
+```
+$ tree ./packages/chat-app/tests
+./packages/chat-app/tests
+├── broadcast-dual.e2e.ts
+├── broadcast.e2e.ts
+├── index.e2e.ts
+...
+```
+
+- link:{REPOS_URL}/packages/chat-app/tests/index.e2e.ts[`packages/chat-app/tests/index.e2e.ts`]
+
+[source,typescript]
+----
+include::../packages/chat-app/tests/index.e2e.ts[]
+----
+
+- link:{REPOS_URL}/packages/chat-app/tests/broadcast.e2e.ts[`packages/chat-app/tests/broadcast.e2e.ts`]
+
+[source,typescript]
+----
+include::../packages/chat-app/tests/broadcast.e2e.ts[]
+----
+
+- link:{REPOS_URL}/packages/chat-app/tests/broadcast-dual.e2e.ts[`packages/chat-app/tests/broadcast-dual.e2e.ts`]
+
+[source,typescript]
+----
+include::../packages/chat-app/tests/broadcast-dual.e2e.ts[]
+----
+
+`chat-app/package.json` にテストを実行するためのコマンドを記述した。
+
+[source,json]
+----
+{
+  "scripts": {
+include::../packages/chat-app/package.json[line=14..20]
+----
+
+テストを実行してみよう。
+
+[source,shell]
+----
+$ cd $ROOT/packages/chat-app
+bun run test-hono-broadcast
+$ bun --hot src/hono-jsx/broadcast.tsx &          bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.ts';           kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')
+bun test v1.3.14 (0d9b296a)
+
+tests/broadcast-dual.e2e.ts:
+🤗 Hello via Bun! 🐰
+Started development server: http://localhost:8000
+👋 A new Websocket Connection
+👋 A new Websocket Connection
+expecting SERVER_NAME to be hono-jsx/broadcast.ts
+⏹️ A Websocket Connection is CLOSED
+⏹️ A Websocket Connection is CLOSED
+✓ test Chat page using 2 browsers > make sure the correct serverName is shown [397.22ms]
+👋 A new Websocket Connection
+👋 A new Websocket Connection
+✉️ A new Websocket Message is received: Hello, world!
+⏹️ A Websocket Connection is CLOSED
+⏹️ A Websocket Connection is CLOSED
+✓ test Chat page using 2 browsers > In a browser, type a message, click Submit button. In another browser, wait to see the message is echoed [276.41ms]
+
+tests/broadcast.e2e.ts:
+👋 A new Websocket Connection
+expecting SERVER_NAME to be hono-jsx/broadcast.ts
+⏹️ A Websocket Connection is CLOSED
+✓ test the chat page > make sure the correct serverName is shown [98.91ms]
+👋 A new Websocket Connection
+✉️ A new Websocket Message is received: Hello, world!
+⏹️ A Websocket Connection is CLOSED
+✓ test the chat page > type a message, click Submit button, wait to see the message is echoed by server [179.14ms]
+
+ 4 pass
+ 0 fail
+Ran 4 tests across 2 files. [2.04s]
+----
 
 == 8. まとめ
 

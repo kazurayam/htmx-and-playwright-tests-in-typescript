@@ -2518,6 +2518,304 @@ Honoが提供するJSXをアプリが利用できるように `tsconfig.json` �
 
 ### 7.7 PlaywrightでE2Eテストをする
 
+chat-appパッケージは全部で6つのサーバを実装した。これらをPlaywrightを使ってテストしたい。
+
+1.  [`chat-app/src/vanilla-javascript/index.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/index.ts)
+
+2.  [`chat-app/src/vanilla-javascript/broadcast.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/broadcast.ts)
+
+3.  [`chat-app/src/htmx-ws/index.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/index.ts)
+
+4.  [`chat-app/src/htmx-ws/broadcast.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/broadcast.ts)
+
+5.  [`chat-app/src/hono-jsx/index.tsx`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/hono-jsx/index.tsx)
+
+6.  [`chat-app/src/hono-jsx/broadcast.tsx`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/hono-jsx/broadcast.tsx)
+
+サーバーのTypeScriptコードが６つあるが、それらは同じURL `http://localhost:8000` に対してほとんど同じHTMLを応答し、同じ動作をする。唯一、`serverName: xxxxxxxx` の表示内容が違っている。
+
+これらをテストするためにテストを書いた。TypeScriptコードとしては３つで、３つ１組のテストを６つのサーバそれぞれに適用する。
+
+[`packages/chat-app/tests`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/tests)
+
+    $ tree ./packages/chat-app/tests
+    ./packages/chat-app/tests
+    ├── broadcast-dual.e2e.ts
+    ├── broadcast.e2e.ts
+    ├── index.e2e.ts
+    ...
+
+- [`packages/chat-app/tests/index.e2e.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/tests/index.e2e.ts)
+
+<!-- -->
+
+    // tests/vanilla-javascript/index.e2e.ts
+
+    import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
+    import * as PW from '@playwright/test';
+    import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
+
+    const url = 'http://localhost:8000/';
+
+    describe(`test the chat page`, async () => {
+        // Here I assume that the server at http://localhost:8000 is already up and running.
+        let driver: BrowserDriverChromium;
+        let page: PW.Page;
+        beforeAll(async () => {
+            driver = await BrowserDriverChromium.create('/', { headless: true });
+        });
+        beforeEach(async () => {
+            page = await driver.navigateToUrl(url);
+        }, 20_000);
+
+        test("make sure the correct serverName is shown", async () => {
+            // Select the serverName
+            console.log(`expecting SERVER_NAME to be ${process.env.SERVER_NAME}`)
+            const span: PW.Locator = page.getByText(process.env.SERVER_NAME, { exact: false });
+            // make sure the button is clickable
+            await span.waitFor({ state: 'visible', timeout: 5000 });
+            await PW.expect(span).toBeVisible();
+        });
+
+        test("type a message, click Submit button, wait to see the message is echoed by server", async () => {
+            // Select the input field
+            const inputMessage: PW.Locator = page.locator('css=input#message');
+            // Make sure the field is visible
+            await inputMessage.waitFor({ state: 'visible', timeout: 5000 });
+            // type a message
+            const msg = 'Hello, world!';
+            inputMessage.fill(msg);
+            // Select the Submit button
+            const button: PW.Locator = page.locator('css=input#btn');
+            // Make sure the button is visible
+            await button.waitFor({ state: 'visible', timeout: 5000 });
+            // Submit it
+            button.click();
+            // At the end of the content of <div id="messages">, expect a <span>Hello, world!</span>
+            await PW.expect(page.locator(`css=div#messages span:last-child`)).toContainText(`${msg}`);
+        });
+
+        afterEach(async () => {
+            await page.close();
+        });
+        afterAll(async () => {
+            driver.close();
+        });
+    })
+
+    async function delay(timeoutMs: number) {
+        await new Promise(resolve => setTimeout(resolve, timeoutMs));
+    }
+
+- [`packages/chat-app/tests/broadcast.e2e.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/tests/broadcast.e2e.ts)
+
+<!-- -->
+
+    // tests/vanilla-javascript/broadcast.e2e.ts
+
+    import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
+    import * as PW from '@playwright/test';
+    import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
+
+    const url = 'http://localhost:8000/';
+
+    describe(`test the chat page`, async () => {
+        // Here I assume that the server at http://localhost:8000 is already up and running.
+        let driver: BrowserDriverChromium;
+        let page: PW.Page;
+        beforeAll(async () => {
+            driver = await BrowserDriverChromium.create('/', { headless: true });
+        });
+        beforeEach(async () => {
+            page = await driver.navigateToUrl(url);
+        }, 20_000);
+
+        test("make sure the correct serverName is shown", async () => {
+            // Select the serverName
+            console.log(`expecting SERVER_NAME to be ${process.env.SERVER_NAME}`)
+            const span: PW.Locator = page.getByText(process.env.SERVER_NAME, { exact: false });
+            // make sure the button is clickable
+            await span.waitFor({ state: 'visible', timeout: 5000 });
+            await PW.expect(span).toBeVisible();
+        });
+
+        test("type a message, click Submit button, wait to see the message is echoed by server", async () => {
+            // Select the input field
+            const inputMessage: PW.Locator = page.locator('css=input#message');
+            // Make sure the field is visible
+            await inputMessage.waitFor({ state: 'visible', timeout: 5000 });
+            // type a message
+            const msg = 'Hello, world!';
+            inputMessage.fill(msg);
+            // Select the Submit button
+            const button: PW.Locator = page.locator('css=input#btn');
+            // Make sure the button is visible
+            await button.waitFor({ state: 'visible', timeout: 5000 });
+            // Submit it
+            button.click();
+            // At the end of the content of <div id="messages">, expect a <span>Hello, world!</span>
+            await PW.expect(page.locator(`css=div#messages span:last-child`)).toContainText(`${msg}`);
+        });
+
+        afterEach(async () => {
+            await page.close();
+        });
+        afterAll(async () => {
+            driver.close();
+        });
+    })
+
+    async function delay(timeoutMs: number) {
+        await new Promise(resolve => setTimeout(resolve, timeoutMs));
+    }
+
+- [`packages/chat-app/tests/broadcast-dual.e2e.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/tests/broadcast-dual.e2e.ts)
+
+<!-- -->
+
+    // tests/vanilla-javascript/broadcast-dual.e2e.ts
+
+    import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
+    import * as PW from '@playwright/test';
+    import { BrowserDriverChromium } from '@kazurayam/htmx-and-playwright-tests-in-typescript-my-app';
+
+    const url = 'http://localhost:8000/';
+
+    describe(`test Chat page using 2 browsers`, async () => {
+        // Here I assume that the server at http://localhost:8000 is already up and running.
+        let driver1: BrowserDriverChromium;
+        let driver2: BrowserDriverChromium;
+        let page1: PW.Page;
+        let page2: PW.Page;
+        beforeAll(async () => {
+            driver1 = await BrowserDriverChromium.create('/', { headless: true });
+            driver2 = await BrowserDriverChromium.create('/', { headless: true });
+        });
+        beforeEach(async () => {
+            page1 = await driver1.navigateToUrl(url);
+            page2 = await driver2.navigateToUrl(url);
+        }, 20_000);
+
+        test("make sure the correct serverName is shown", async () => {
+            // Select the serverName
+            console.log(`expecting SERVER_NAME to be ${process.env.SERVER_NAME}`)
+            const span: PW.Locator = page1.getByText(process.env.SERVER_NAME, { exact: false });
+            // make sure the button is clickable
+            await span.waitFor({ state: 'visible', timeout: 5000 });
+            await PW.expect(span).toBeVisible();
+        });
+
+        test("In a browser, type a message, click Submit button. In another browser, wait to see the message is echoed", async () => {
+            // Select the input field
+            const inputMessage: PW.Locator = page1.locator('css=input#message');
+            // Make sure the field is visible
+            await inputMessage.waitFor({ state: 'visible', timeout: 5000 });
+            // type a message
+            const msg = 'Hello, world!';
+            inputMessage.fill(msg);
+            // Select the Submit button
+            const button: PW.Locator = page1.locator('css=input#btn');
+            // Make sure the button is visible
+            await button.waitFor({ state: 'visible', timeout: 5000 });
+            // Submit it
+            button.click();
+            // In the page1, at the end of the content of <div id="messages">, expect a <span>Hello, world!</span>
+            await PW.expect(page1.locator(`css=div#messages span:last-child`)).toContainText(`${msg}`);
+            // Also in the page2, at the end of the content of <div id="messages">, expect a <span>Hello, world!</span>
+            await PW.expect(page2.locator(`css=div#messages span:last-child`)).toContainText(`${msg}`);
+        });
+
+        afterEach(async () => {
+            await page1.close();
+            await page2.close();
+        });
+        afterAll(async () => {
+            driver1.close();
+            driver2.close();
+        });
+    })
+
+    async function delay(timeoutMs: number) {
+        await new Promise(resolve => setTimeout(resolve, timeoutMs));
+    }
+
+`chat-app/package.json` にテストを実行するためのコマンドを記述した。
+
+    {
+      "scripts": {
+    {
+      "name": "chat-app",
+      "module": "index.ts",
+      "type": "module",
+      "private": true,
+      "scripts": {
+        "dev":               "bun --hot ./src/vanilla-javascript/index.ts",
+        "vanilla-index":     "bun --hot ./src/vanilla-javascript/index.ts",
+        "vanilla-broadcast": "bun --hot ./src/vanilla-javascript/broadcast.ts",
+        "htmx-index":        "bun --hot ./src/htmx-ws/index.ts",
+        "htmx-broadcast":    "bun --hot ./src/htmx-ws/broadcast.ts",
+        "hono-index":        "bun --hot ./src/hono-jsx/index.tsx",
+        "hono-broadcast":    "bun --hot ./src/hono-jsx/broadcast.tsx",
+        "test-vanilla-index":     "bun --hot src/vanilla-javascript/index.ts &     bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=vanilla-javascript/index.ts';     kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-vanilla-broadcast": "bun --hot src/vanilla-javascript/broadcast.ts & bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=vanilla-javascript/broadcast.ts'; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-htmx-index":        "bun --hot src/htmx-ws/index.ts &                bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=htmx-ws/index.ts';                kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-htmx-broadcast":    "bun --hot src/htmx-ws/broadcast.ts &            bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=htmx-ws/broadcast.ts';            kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-hono-index":        "bun --hot src/hono-jsx/index.tsx &              bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=hono-jsx/index.ts';               kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-hono-broadcast":    "bun --hot src/hono-jsx/broadcast.tsx &          bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.ts';           kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "e2e": "bun run test-vanilla-index; bun run test-vanilla-broadcast; bun run test-htmx-index; bun run test-htmx-broadcast; bun run test-hono-index; bun run test-hono-broadcast"
+      },
+      "devDependencies": {
+        "@playwright/test": "^1.61.1",
+        "@types/bun": "latest",
+        "bun-types": "^1.3.14",
+        "@kazurayam/htmx-and-playwright-tests-in-typescript-my-app": "workspace:*"
+      },
+      "peerDependencies": {
+        "typescript": "^5"
+      },
+      "dependencies": {
+        "@hono/node-server": "^2.0.8",
+        "hono": "^4.12.29"
+      }
+    }
+
+テストを実行してみよう。
+
+    $ cd $ROOT/packages/chat-app
+    bun run test-hono-broadcast
+    $ bun --hot src/hono-jsx/broadcast.tsx &          bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.ts';           kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')
+    bun test v1.3.14 (0d9b296a)
+
+    tests/broadcast-dual.e2e.ts:
+    🤗 Hello via Bun! 🐰
+    Started development server: http://localhost:8000
+    👋 A new Websocket Connection
+    👋 A new Websocket Connection
+    expecting SERVER_NAME to be hono-jsx/broadcast.ts
+    ⏹️ A Websocket Connection is CLOSED
+    ⏹️ A Websocket Connection is CLOSED
+    ✓ test Chat page using 2 browsers > make sure the correct serverName is shown [397.22ms]
+    👋 A new Websocket Connection
+    👋 A new Websocket Connection
+    ✉️ A new Websocket Message is received: Hello, world!
+    ⏹️ A Websocket Connection is CLOSED
+    ⏹️ A Websocket Connection is CLOSED
+    ✓ test Chat page using 2 browsers > In a browser, type a message, click Submit button. In another browser, wait to see the message is echoed [276.41ms]
+
+    tests/broadcast.e2e.ts:
+    👋 A new Websocket Connection
+    expecting SERVER_NAME to be hono-jsx/broadcast.ts
+    ⏹️ A Websocket Connection is CLOSED
+    ✓ test the chat page > make sure the correct serverName is shown [98.91ms]
+    👋 A new Websocket Connection
+    ✉️ A new Websocket Message is received: Hello, world!
+    ⏹️ A Websocket Connection is CLOSED
+    ✓ test the chat page > type a message, click Submit button, wait to see the message is echoed by server [179.14ms]
+
+     4 pass
+     0 fail
+    Ran 4 tests across 2 files. [2.04s]
+
 ## 8. まとめ
 
 htmx構文を使ったwebアプリケーションをbunとHonoの上で構築しPlaywrightのライブラリを使ってE2Eテストすることができた。E2Eテストを実行するのにbunに組み込まれたテストランナーを使った。Playwrightに関するドキュメントの多くは `npx playwright XXXX` というコマンドを使えと書いているが、あえてその方法をとらなかった。なぜなら `npx` コマンドはNode.jsの部品であり、bunでは使えないからだ。そこでPlaywrightのAPIを介してブラウザを起動・終了するためのライブラリ（`BrowserDriverChromium` クラスなど）を独自実装した。これによって `npx playwright` ではなく `bun test` でE2Eテストを実行できた。

@@ -2166,6 +2166,13 @@ broadcast.tsのプロセスが立ち上がっている間、
         </body>
     </html>
 
+この中で メッセージを入力すべき input タグに `name="message"` という属性が指定されてあることに注意してほしい。
+
+    <form id="form" ws-send>
+        <input type="text" id="message" name="message" placeholder="メッセージ" required>
+
+Htmx WebSocket Extensionは `name` 属性が指定されている input を選んでその値をサーバへ送信する。もしもname属性を指定し忘れるとメッセージがブラウザからサーバへ送信されない。
+
 - [chat-app/src/htmx-ws/broadcast.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws/broadcast.ts)
 
 <!-- -->

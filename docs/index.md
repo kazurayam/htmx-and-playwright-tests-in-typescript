@@ -2671,7 +2671,7 @@ chat-appパッケージは全部で6つのサーバを実装した。これら�
 
 - [`packages/chat-app/tests/broadcast-dual.e2e.ts`](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/tests/broadcast-dual.e2e.ts)
 
-<!-- -->
+このテストではブラウザを２つ立ち上げている。いっぽうのブラウザのChat画面にメッセージを入力したら、他方のブラウザのChat画面に同じメッセージが表示されることを確認している。
 
     // tests/vanilla-javascript/broadcast-dual.e2e.ts
 
@@ -2760,8 +2760,8 @@ chat-appパッケージは全部で6つのサーバを実装した。これら�
         "test-vanilla-broadcast": "bun --hot src/vanilla-javascript/broadcast.ts & bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=vanilla-javascript/broadcast.ts'; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
         "test-htmx-index":        "bun --hot src/htmx-ws/index.ts &                bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=htmx-ws/index.ts';                kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
         "test-htmx-broadcast":    "bun --hot src/htmx-ws/broadcast.ts &            bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=htmx-ws/broadcast.ts';            kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
-        "test-hono-index":        "bun --hot src/hono-jsx/index.tsx &              bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=hono-jsx/index.ts';               kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
-        "test-hono-broadcast":    "bun --hot src/hono-jsx/broadcast.tsx &          bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.ts';           kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-hono-index":        "bun --hot src/hono-jsx/index.tsx &              bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=hono-jsx/index.tsx';              kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-hono-broadcast":    "bun --hot src/hono-jsx/broadcast.tsx &          bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.tsx';          kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
         "e2e": "bun run test-vanilla-index; bun run test-vanilla-broadcast; bun run test-htmx-index; bun run test-htmx-broadcast; bun run test-hono-index; bun run test-hono-broadcast"
       },
       "devDependencies": {
@@ -2779,7 +2779,51 @@ chat-appパッケージは全部で6つのサーバを実装した。これら�
       }
     }
 
-テストを実行してみよう。
+#### 環境変数を経由してテストにパラメータを渡す
+
+`chat-app/tests/index.e2e.ts` に下記のような一行がある。
+
+        test("make sure the correct serverName is shown", async () => {
+            // Select the serverName
+            console.log(`expecting SERVER_NAME to be ${process.env.SERVER_NAME}`)
+            const span: PW.Locator = page.getByText(process.env.SERVER_NAME, { exact: false });
+            ...
+
+ここで `process.env.SERVER_NAME` とは環境変数 `SERVER_NAME` が存在することを前提としてその値を参照する式だ。その値とはたとえば `vanilla-javascript/index.ts` だ。
+
+[chat-app/bunfig.toml](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/bunfig.toml) に下記のような設定を書いた。
+
+    [env]
+    SERVER_NAME = "htmx-ws/broadcast.ts"
+
+これによって環境変数 `SERVER_NAME` のデフォルト値を設定することができた。さらに `chat-app/package.json` に下記のように書いてある。
+
+- [chat-app/package.json](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/package.json)
+
+<!-- -->
+
+        "test-vanilla-index":     "bun --hot src/vanilla-javascript/index.ts &     bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=vanilla-javascript/index.ts';     kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-vanilla-broadcast": "bun --hot src/vanilla-javascript/broadcast.ts & bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=vanilla-javascript/broadcast.ts'; kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-htmx-index":        "bun --hot src/htmx-ws/index.ts &                bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=htmx-ws/index.ts';                kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-htmx-broadcast":    "bun --hot src/htmx-ws/broadcast.ts &            bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=htmx-ws/broadcast.ts';            kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-hono-index":        "bun --hot src/hono-jsx/index.tsx &              bun test ./tests/index.e2e.ts      --define 'process.env.SERVER_NAME=hono-jsx/index.tsx';              kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+        "test-hono-broadcast":    "bun --hot src/hono-jsx/broadcast.tsx &          bun test ./tests/broadcast*.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.tsx';          kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')",
+
+例えば１９行目を調べてみよう。
+
+    bun --hot src/hono-broadcast/index.ts &
+         bun test ./tests/index.e2e.ts --define 'process.env.SERVER_NAME=hono-jsx/broadcast.ts';
+         kill $(ps aux | grep '[0-9] bun --hot' | awk '{print $2}')
+
+最初に `bun src/vanilla-javascript/index.ts &` とやってサーバを起動している。サーバーは瞬時に立ち上がるはずだ。
+
+それと並行して `bun test ./test/index.e2e.ts ;` とやってE2Eテストを実行している。ただしコマンドライン・パラメータで環境変数 `SERVER_NAME` の値を `hono-jsx/broadcast.tsx` で上書きしている。
+
+最後にサーバーのプロセスをkillしている。
+
+このように環境変数を経由してパラメータをテストに渡すことができた。こうすることにより６種類のサーバをテストするのに１組のPlaywrightテストでカバーすることができた。コードが重複するのを避けることができた。
+
+#### E2Eテストを実行する
 
     $ cd $ROOT/packages/chat-app
     bun run test-hono-broadcast

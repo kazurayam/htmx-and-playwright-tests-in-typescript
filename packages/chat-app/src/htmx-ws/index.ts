@@ -28,11 +28,12 @@ const server = Bun.serve({
                 '<span>👋 Welcome baby</span>' + '</div>');
         },
         message(ws, data) {
-            console.log(data)
+            console.log(`>> data: ${data}`)
             let d = JSON.parse(data.toString())
             let response = '<div hx-swap-oob="beforeend:#messages">' +
                 `<span>from you: ${d.message}</span>` +
                 '</div>';
+            console.log(`<< response: ${response}`)
             ws.send(response);
         },
         close(ws, code, message) {

@@ -1706,21 +1706,21 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
 
 - WebSocketプロトコルで通信するクライアントとサーバを作る。
 
-- サーバーはTypeScript言語で書き、Bunの上で動かす。Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用してChatサーバーを実現する。broadcastサービスを実現するのにBunの [publish-subscribeパターンの実装](https://bun.com/docs/guides/websocket/pubsub) を活用する
+- サーバーはTypeScript言語で書き、Bunの上で動かす。Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用する。broadcastサービスを実現するのにBunの [publish-subscribeパターンの実装](https://bun.com/docs/guides/websocket/pubsub) を活用する
 
-- クライアントとしてWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000` を開くとチャット画面のHTMLが応答されるようにする。
+- クライアントとしてWebブラウザを使う。ブラウザを立ち上げて `http://localhost:8000/` を開くとチャット画面のHTMLが応答されるようにする。
 
-- Chatアプリの３通りの手法で実装する。素朴な実装手法からより高度な手法へと段階的にコードを書き変える。
+- Chatアプリの３通りの手法で実装する。素朴な実装手法からより高度な手法へと段階的にコードを書き変えていく。
 
-  1.  最初のChatアプリでは、クライアントをVanilla JavaScript(素朴なjavascript)で実装する。JavaScriptがクライアントWebSocket APIを直接呼び出してサーバーとWebSocketで通信し、Web画面のDOMを更新する。
+  1.  最初のChatアプリでは、クライアントをVanilla JavaScript(素朴なjavascript)で実装する。JavaScriptがクライアントWebSocket APIを直接呼び出してサーバーと通信する。カスタムなJavaScriptがWeb画面のDOMを更新する。
 
-  2.  二番目のChatアプリでは [HtmxのWebSocket Exetension](https://htmx.org/extensions/ws/) を導入する。サーバとクライアントのコードをかなり大きく書き変える。
+  2.  二番目のChatアプリでは [HtmxのWebSocket Exetension](https://htmx.org/extensions/ws/) を導入する。カスタムなJavaScriptを不要にする。
 
-  3.  三番目のChatアプリでは、HonoとJSXを導入する。コードをさらに書き変える。
+  3.  三番目のChatアプリでは、HonoとJSXを導入する。JSXによってHTMLをコンポーネントの組み合わせによって構築する。
 
 - 手法３通りの各々について、２通りのサーバを実装する。echoサーバとbroadcastサーバと。echoサーバーでは、人がブラウザで開いたチャット画面に「こんにちは」とメッセージを入力すれば、そのウインドウに「こんにちは」と応答するが、他のウインドウに「こんにちは」と表示されることはない。broadcastサーバでは、ブラウザのウインドウを２つ開いてチャット画面を開いた状態で、人が片方のウインドウで「こんにちは」と入力すれば、他方のウインドウにも「こんにちは」と表示される。つまるところ３通りの手法 ✖️ ２種類の動作 = ６つのサーバを作る。６つのサーバが `localhost:8000` へのHTTPリクエストに対して応答するチャット画面はほとんど同じ見た目を持ち、ほとんど同じように動作する。
 
-- ６つのサーバそれぞれについてPlaywrightを使ったE2Eテストを作る。
+- ６つのサーバをテストするためのコードを作る。Playwrightを適用する。
 
 ### 7.2 参考情報
 
@@ -1731,8 +1731,6 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
 3.  [HtmxのWebSocket Extension](https://htmx.org/extensions/ws/)
 
 4.  [Bun API Reference / serve](https://bun.com/reference/bun/serve)
-
-5.  [MDN / WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 
 ### 7.3 chat-appパッケージを作る
 
@@ -1752,11 +1750,7 @@ htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプ�
     ├── README.md
     └── tsconfig.json
 
-`packages/chat-app/static` ディレクトリを作った。その中に3つのコードを作った。
-
-- `packages/chat-app/static/htmx/ext/ws.js` --- [jsdeliverのhtmx-ext-ws](https://www.jsdelivr.com/package/npm/htmx.org) からダウンロードした。
-
-- `packages/chat-app/static/htmx/htmx.min.js` --- [jsdeliverのhtmx..org](https://www.jsdelivr.com/package/npm/htmx.org) からダウンロードした。
+`packages/chat-app/static` ディレクトリを作った。その中に1つのコードを作った。
 
 - `packages/chat-app/static/styles/chat.css` --- htmx本の著者が公開している [GitHubレポジトリ](https://github.com/tomo1227/htmx_book_app/blob/main/static/styles/chat.css) からダウンロードした
 
@@ -1827,14 +1821,22 @@ vanilla-javascript/broadcast.ts を実行しよう。今度はbroadastするサ�
 
 ![073 chat broadcast](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/073-chat-broadcast.png)
 
-broadcast.tsのプロセスが立ち上がっている時、
-`Hello from the Server, this is a periodic message!` というメッセージがサーバーからブラウザへ送信されて表示されることにも注意してほしい。WebSocketプロトコルではサーバーがわで発生した任意のイベントを契機としてメッセージを発信することができる。HTTPではこれができない。
+broadcast.tsのプロセスが立ち上がっている間、
+`Hello from the Server, this is a periodic message!` というメッセージが繰り返しサーバーからブラウザへ送信されて画面に表示される。WebSocketプロトコルではサーバー側で発生した任意のイベントを契機としてメッセージを発信することができる。HTTPプロトコルではこれができない。
 
 ![074 chat server side event](https://kazurayam.github.io/htmx-and-playwright-tests-in-typescript/images/074-chat-server-side-event.png)
 
 #### 7.4.4 chat-app/src/vanilla-javascriptのソース
 
-- [chat-app/src/vanilla-javascript/index.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/index.ts)
+下記のweb記事を参考にした。
+
+1.  [DEV / WebSocket with JavaScript and Bun, by ROBERTO BUTTI](https://dev.to/robertobutti/websocket-with-javascript-and-bun-4o7c)
+
+2.  [DEV / WebSocket Client with JavaScript, by ROBERTO BUTTI](https://dev.to/robertobutti/websocket-client-with-javascript-54ec)
+
+3.  [DEV / WebSocket broadcasting with JavaScript and Bun, by ROBERTO BUTTI](https://dev.to/robertobutti/websocket-broadcasting-with-javascript-and-bun-3mkf)
+
+    - [chat-app/src/vanilla-javascript/index.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/vanilla-javascript/index.ts)
 
 <!-- -->
 
@@ -2007,9 +2009,11 @@ broadcast.tsのプロセスが立ち上がっている時、
 
 #### 7.4.5 必要な設定
 
-`chat-app/src/vanilla-javascript/index.ts` を動かすためにはどんなパッケージを追加する必要があるか？ `vanilla-javascript/index.ts` が `new Bun.serve()` を呼び出しているから bun をaddしなければならないのではないか？ --- いや、そうではない。 `bun ./src/vanilla-javascript/index.ts` というように `bun` の中で `index.ts` を実行するから `Bun.serve()` は実行環境の中に組み込まれて与えられる。だから `bun add xxxx` すべき外部パッケージはない。
+`chat-app/src/vanilla-javascript/index.ts` を動かすためにはどんなパッケージを追加する必要があるか？ `vanilla-javascript/index.ts` が `new Bun.serve()` を呼び出しているから bun をaddしなければならないのではないか？ --- いや、そうではない。 `bun ./src/vanilla-javascript/index.ts` というコマンドを実行するということは、 `bun` 実行環境の中で `index.ts` を実行するのだから `Bun.serve()` は実行環境の中に組み込まれて与えられる。だから `bun add xxxx` すべき外部パッケージはない。
 
 ### 7.5 HtmxのWebSocket Extensionを導入してChatアプリを作り替える
+
+前述の `chat-app/src/vanilla-javascript` ではHTMLの中に `<script>` タグがあって、その中にわたしが自作したJavaScriptがWebSocket APIを直接callし、かつHTML画面のDOMを更新していた。このJavaScriptコードを自作するのはWebSocket APIやDOM APIを復習するに役立った。しかしデバッグにそれなりに難儀したから、何度も繰り返したくはない。HtmxのWebSocket Extensionを導入してすればJavaScriptを自作するのを回避することができる。やってみよう。
 
 #### 7.5.1 Echoサーバを起動する
 
@@ -2110,11 +2114,12 @@ broadcast.tsのプロセスが立ち上がっている時、
                     '<span>👋 Welcome baby</span>' + '</div>');
             },
             message(ws, data) {
-                console.log(data)
+                console.log(`>> data: ${data}`)
                 let d = JSON.parse(data.toString())
                 let response = '<div hx-swap-oob="beforeend:#messages">' +
                     `<span>from you: ${d.message}</span>` +
                     '</div>';
+                console.log(`<< response: ${response}`)
                 ws.send(response);
             },
             close(ws, code, message) {
@@ -2241,7 +2246,30 @@ broadcast.tsのプロセスが立ち上がっている時、
 
 `chat-app/src/htmx-ws/index.ts` を動かすためにはどんなパッケージを追加する必要があるか？
 
-クライアントがHtmxとWebSocket Extensionを必要とする。しかしランタイムにCDNからロードする方式を採用した。だから `bun add xxxx` であらかじめ追加しておくべき外部パッケージはない。
+クライアントがHtmxとWebSocket Extensionを必要とする。今回はContent Delivery Networkから都度ロードする方式を採用した。だから `bun add xxxx` であらかじめ追加しておくべき外部パッケージはない。
+
+#### 7.5.6 Htmx WebSocket Extensionがサーバとやりとりするメッセージの形式を知るべし
+
+[chat-app/src/htmx-ws/index.ts](https://github.com/kazurayam/htmx-and-playwright-tests-in-typescript/tree/develop/packages/chat-app/src/htmx-ws-index.ts)
+\[source,shell\] の30行目からこんなふうに書いてあります。
+
+            message(ws, data) {
+                console.log(`>> data: ${data}`)
+                let d = JSON.parse(data.toString())
+                let response = '<div hx-swap-oob="beforeend:#messages">' +
+                    `<span>from you: ${d.message}</span>` +
+                    '</div>';
+                console.log(`<< response: ${response}`)
+                ws.send(response);
+            },
+
+クライアント（Htmx WebSocket拡張）がサーバーへ送信したメッセージをコンソールに印字しています。またサーバーがクライアントに返したデータもコンソールに印字しています。では実際にサーバとブラウザを立ち上げてChat画面に「こんにちは」とキー入力して送信ボタンを押した時、サーバのコンソールに何が印字されるでしょうか？実際やってみるとこんなふうになりました。
+
+    >> data: {"message":"こんにちは","HEADERS":{"HX-Request":"true","HX-Trigger":"form","HX-Trigger-Name":null,"HX-Target":"form","HX-Current-URL":"http://localhost:8000/"}}
+    << response: <div hx-swap-oob="beforeend:#messages"><span>from you: こんにちは</span></div>
+
+Htmx WebSocket拡張は「こんにちは」をJSON形式のテキストに装飾して送信します。サーバは受け取ったJSONをいったんparseして `"meesage": "こんにちは"` というkey-value pairを取り出します。
+そしてサーバは応答をHTMLフラグメントを組み立てて応答します。このやり方はHtmx WebSocket拡張の固有なやり方です。サーバーサイドはクライアントがHtmx WebSocket拡張を使っていることを意識して作り込みをする必要があります。
 
 ### 7.6 HonoとJSXを導入してChatアプリを作り替える
 

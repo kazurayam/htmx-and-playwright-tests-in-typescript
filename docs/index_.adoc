@@ -1350,7 +1350,7 @@ Ran 1 test across 1 file. [5.16s]
 
 htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの link:https://github.com/tomo1227/htmx_book_app/blob/main/src/chat.py[chatアプリのPython言語による実装] をGitHubで公開している。それと同等のものをわたしはTypeScript言語で実装した。
 
-=== 7.1 Chatプリ設計の概要
+=== 7.1 Chatアプリ設計の概要
 
 - WebSocketプロトコルで通信するクライアントとサーバを作る。
 - サーバーはTypeScript言語で書き、Bunの上で動かす。Bunがサーバー・サイドのWebSocket APIを提供しているのでこれを利用する。broadcastサービスを実現するのにBunの link:https://bun.com/docs/guides/websocket/pubsub[publish-subscribeパターンの実装] を活用する

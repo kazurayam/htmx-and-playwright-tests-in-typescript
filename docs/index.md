@@ -1702,7 +1702,7 @@ VSCodeのエディタで `todo.e2e.ts` を確認した。するとようやく�
 
 htmx本のCHAPTER07「サンプルアプリの作成」SECTION-25にChatアプリが紹介されている。著者はPython言語で書いたwebアプリケーションの [chatアプリのPython言語による実装](https://github.com/tomo1227/htmx_book_app/blob/main/src/chat.py) をGitHubで公開している。それと同等のものをわたしはTypeScript言語で実装した。
 
-### 7.1 Chatプリ設計の概要
+### 7.1 Chatアプリ設計の概要
 
 - WebSocketプロトコルで通信するクライアントとサーバを作る。
 

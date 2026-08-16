@@ -1850,7 +1850,7 @@ include::../packages/chat-app/tests/broadcast-dual.e2e.ts[]
 ----
 {
   "scripts": {
-include::../packages/chat-app/package.json[line=14..20]
+include::../packages/chat-app/package.json[lines=14..20]
 ----
 
 ==== 環境変数を経由してテストにパラメータを渡す
@@ -1878,9 +1878,6 @@ include::../packages/chat-app/bunfig.toml[]
 これによって環境変数 `SERVER_NAME` のデフォルト値を設定することができた。さらに `chat-app/package.json` に下記のように書いてある。
 
 - link:{REPOS_URL}/packages/chat-app/package.json[chat-app/package.json]
-----
-include::../packages/chat-app/package.json[lines=14..19]
-----
 
 例えば１９行目を調べてみよう。
 
@@ -1892,7 +1889,7 @@ bun --hot src/hono-broadcast/index.ts &
 
 最初に `bun src/vanilla-javascript/index.ts &` とやってサーバを起動している。サーバーは瞬時に立ち上がるはずだ。
 
-それと並行して `bun test ./test/index.e2e.ts ;` とやってE2Eテストを実行している。ただしコマンドライン・パラメータで環境変数 `SERVER_NAME` の値を `hono-jsx/broadcast.tsx` で上書きしている。
+それと並行して `bun test ./test/index.e2e.ts ;` とやってE2Eテストを実行している。ただしコマンドライン・パラメータ `--define` で環境変数 `SERVER_NAME` の値を `hono-jsx/broadcast.tsx` で上書きしている。
 
 最後にサーバーのプロセスをkillしている。
 
